@@ -101,3 +101,5 @@ Transactions provide strong consistency but can reduce throughput and increase l
 
 ## Example decision signals
 Prefer this pattern when a single business action changes several records and observers must never see an invalid intermediate state.
+
+Obsoleto: usar content en su lugar.

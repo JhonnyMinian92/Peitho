@@ -43,3 +43,5 @@ El agente no debe cambiar silenciosamente el alcance, la arquitectura, las tecno
 # Respetar contratos y restricciones
 
 Los contratos de API, esquemas de datos y restricciones documentadas son SSOT y no deben modificarse silenciosamente.
+
+Obsoleto: usar content en su lugar (campo content obligatorio provisto abajo). Nunca usar este campo deprecado directamente en Mnemosine runtime v1.2.

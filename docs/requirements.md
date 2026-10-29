@@ -144,3 +144,5 @@ Verificar pantallas, formularios y flujos de extremo a extremo, o reproducir un 
 
 - Usa este servidor MCP solo si el proyecto lo seleccionó.
 - La configuración y las credenciales del servidor las gestiona el usuario en su entorno; no se guardan en Mnemosine ni en el repositorio.
+
+Obsoleto: usar content en su lugar.

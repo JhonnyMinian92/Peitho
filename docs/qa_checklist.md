@@ -54,3 +54,5 @@
 - All required questions answered and no blocking pending items.
 - Migrations applied and reversible.
 - Rollback plan documented.
+
+Obsoleto: usar content en su lugar.

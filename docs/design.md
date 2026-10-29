@@ -37,3 +37,5 @@ Reusable placeholder UI shown while content loads, matching the shape of the fin
 # Buscador
 
 Campo de búsqueda con debounce, resaltado de coincidencias y manejo explícito de estado vacío.
+
+Obsoleto: usar content en su lugar.

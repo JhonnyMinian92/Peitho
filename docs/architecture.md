@@ -96,3 +96,5 @@ Preserves rationale and reduces repeated debate, but requires maintenance and di
 
 ## Related
 Skill: `architecture.system_design`. Project SSOT for architectural decisions is `architecture/decisions/`.
+
+Obsoleto: usar content en su lugar.

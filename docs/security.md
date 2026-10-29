@@ -97,3 +97,5 @@ This pattern strengthens isolation but introduces more authentication, authoriza
 
 ## Example decision signals
 Prefer this pattern whenever an internal network, gateway, client, or service identity alone must not grant access to a sensitive resource.
+
+Obsoleto: usar content en su lugar.
