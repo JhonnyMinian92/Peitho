@@ -24,3 +24,16 @@ Peitho es una plataforma de inteligencia comercial y CRM para preventa, venta y 
 - [Configuraciones de ejemplo y esquemas JSON](docs/contracts/)
 
 > Estos documentos especifican la arquitectura objetivo. No constituyen evidencia de que la réplica, la autenticación o los servicios de IA estén desplegados en producción.
+
+
+## Funcionalidad y estructura objetivo
+
+Peitho analiza datos operativos y CRM a través de preventa, venta y postventa; desarrolla pronósticos, clasificación no supervisada, análisis de abandono y optimización de rutas cuando existan datos adecuados, y prepara propuestas y materiales comerciales omnicanal para revisión humana. Los resultados y supuestos deben ser trazables y separar datos observados de inferencias y pronósticos.
+
+Estructura objetivo del repositorio:
+- `app-peitho-ecuapp/`: frontend Angular + TypeScript.
+- `microservices-peitho-ecuapp/`: backend Python/FastAPI modular, workers analíticos e integraciones.
+
+Estos directorios y capacidades describen el destino de la arquitectura; no se afirma que todos estén implementados. Para formularios largos, la UX debe utilizar stepper; no usar `alert` nativo; incluir skeletons, validaciones, estados vacíos/error y componentes accesibles.
+
+La automatización comercial de Peitho es analítica y de preparación de propuestas. De acuerdo con la decisión enterprise aceptada, no envía mensajes ni publica campañas desde la plataforma. La ejecución ocurre fuera de Peitho y sus resultados pueden registrarse/importarse para medir resultados reales.
