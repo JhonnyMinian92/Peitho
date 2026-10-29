@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "request_id": "6fce3e30-cf75-4b2a-a56c-2020a897b2cd",
+  "sent_at": "2026-10-29T18:30:00Z",
+  "data": {
+    "operation": "forecast_demand",
+    "product_id": "SKU-EXAMPLE",
+    "horizon_days": 14
+  },
+  "metadata": {
+    "locale": "es-EC",
+    "timezone": "America/Guayaquil",
+    "client_version": "0.1.0"
+  }
+}
