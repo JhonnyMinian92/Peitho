@@ -1,5 +1,16 @@
 # Database
 
+## Inventary: esquema fuente de solo lectura
+
+La base de datos transaccional de Inventary es distinta de la base propia de Peitho. El inventario de tablas y campos fuente deriva de las migraciones Flyway de Inventary `V1–V18` en el snapshot `083fc9f4ec97b8673de9f0e2adef6af195df65e5` (49 tablas definidas por SQL). No se debe adivinar el esquema ni copiarlo como si fuera el modelo de Peitho.
+
+- [Catálogo detallado de tablas, campos, relaciones, semántica y réplica](integration/inventary-database-schema.md)
+- [Catálogo JSON para agentes/validadores](contracts/schemas/inventary-source-schema-catalog-v18.json)
+- [ADR de réplica lógica](architecture/decisions/ADR-0001-inventary-logical-replication.md)
+- [Configuración de ejemplo de lectura/replicación](contracts/config/inventary-readonly.example.json)
+
+Peitho debe conservar las tablas fuente en un namespace de espejo aislado y crear su propio modelo canónico/analítico en un esquema distinto. La réplica no copia DDL automáticamente, no transforma valores ni debe replicar credenciales o PII sin aprobación explícita. La publicación real de tablas/columnas sigue pendiente de revisión; el catálogo no equivale a una publicación aprobada ni acredita que las migraciones estén aplicadas en producción.
+
 Database: new (postgresql); the agent designs and creates it.
 
 En el directorio raiz debe crear el directorio del frontend app-peitho-ecuapp y del backend que es microservices-peitho-ecuapp. El frontend no debe usar alert, siempre usar skelleton, modales, stepper, selectores modernos, input con validaciones, efectos, transiciones y experiencia de usuario facil e intuitiva. El backend debe tener estandar de json request y estadar de salida de json response. El backend debe tener cifrado de aplicacion, trasabilidad, escalamiento, auditoria, sonda, webhook, sse, machine learning, algoritmos de prediccion, algoritmos de clasificacion no supervisado, algoritmos de mejor ruta, algoritmos estadistico de probabilidad de abandono, entre otros. El backend debe ser el cerebro que constantemente piensa con los datos que siguen llegando de las ventas y compras. Ademas de conocer totalmente el estado actual del inventario. jamas hagas codigo spaguetti o monolitos con funciones gigantes de codigo fuente.

@@ -364,7 +364,7 @@
 
 Peitho solo podrá declararse completo cuando:
 
-- [ ] Todas las tareas PEI-001 a PEI-243 estén cerradas con evidencia, o exista una ADR de no aplicabilidad aprobada y verificable para cada excepción.
+- [ ] Todas las tareas PEI-001 a PEI-249 estén cerradas con evidencia, o exista una ADR de no aplicabilidad aprobada y verificable para cada excepción.
 - [ ] Cada requisito funcional de docs/context.md, docs/flow.md, docs/functionality.md y de la especificación enterprise tenga vínculo a implementación, prueba y evidencia.
 - [ ] Todas las migraciones puedan aplicarse a una base vacía de pruebas y actualizar una instancia soportada sin pérdida no aceptada.
 - [ ] CI pase en el commit entregado, incluidos lint, tipos, build, unit/integration/contract/E2E y escáneres definidos como bloqueantes.
@@ -376,3 +376,16 @@ Peitho solo podrá declararse completo cuando:
 - [ ] Documentación, código, migraciones, contratos y ejecución estén sincronizados.
 
 **Importante:** no se marca una tarea como completada porque su título aparezca en el código, porque compile aisladamente o porque el agente haya generado archivos. Se exige comportamiento probado y evidencia ligada a un commit/CI.
+
+## Fase 18 — Contrato versionado del esquema fuente de Inventary y detección de drift
+
+**Dependencias:** PEI-001 a PEI-010 para trazabilidad; debe cerrarse antes de activar la publicación definitiva de Inventary. **Fuente de referencia al documentar:** `JhonnyMinian92/inventary@083fc9f4ec97b8673de9f0e2adef6af195df65e5`, migraciones Flyway V1–V18 bajo `src/main/resources/db/migration`, 49 tablas declaradas por SQL. Ver `docs/integration/inventary-database-schema.md` y `docs/contracts/schemas/inventary-source-schema-catalog-v18.json`.
+
+- [ ] **PEI-244** Mantener el catálogo de tablas/campos de Inventary derivado de los archivos Flyway fuente, con commit de origen, lista y SHA de migraciones, claves, restricciones y relaciones; nunca inferir esquema desde nombres de endpoints ni documentación obsoleta.
+- [ ] **PEI-245** Crear una matriz tabla/columna → propósito Peitho → proyección analítica → clasificación de sensibilidad → base de acceso → retención → tests. Distinguir explícitamente el esquema de origen del esquema propio de Peitho.
+- [ ] **PEI-246** Proponer y obtener aprobación explícita de la allowlist de replicación a nivel tabla/columna. Excluir credenciales/RBAC/infraestructura de mensajería y PII/texto libre por defecto; probar la estrategia de filtrado/seudonimización elegida.
+- [ ] **PEI-247** Implementar detección de schema drift entre el catálogo JSON, las migraciones fuente del SHA acordado y el esquema realmente aplicado en una base de prueba. Bloquear activación/deploy de una réplica incompatible y generar diff legible.
+- [ ] **PEI-248** Validar publicación, replica identity, permisos, nombres de esquema/tablas, namespace de espejo y compatibilidad del PostgreSQL desplegado. Mantener las tablas replicadas aisladas de las tablas propias de Peitho, sin cambios DDL locales en el espejo.
+- [ ] **PEI-249** Crear pruebas reproducibles contra una base temporal construida con el historial Flyway completo aprobado de Inventary, comprobar tablas/columnas/constraints/catalogo y probar bootstrap, cambios incrementales, conciliación, recuperación y denegación de escritura.
+
+**Gate:** el commit documental revisado actualmente encuentra V1–V18 en la ruta de fuente, mientras el README raíz de Inventary todavía indica V1–V15. No activar producción hasta confirmar SHA desplegado, historial Flyway real, estructura efectiva y aprobación de la publicación. El catálogo está derivado del SQL versionado; no es una certificación de la base desplegada.

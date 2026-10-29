@@ -1,7 +1,6 @@
 {
   "schema_version": "1.0.0",
   "project": "Peitho",
-  "updated_for_commit": "4ecf39062bcb15c059890cee956a8e28db7569dc",
   "objective": "Producto empresarial completo; no MVP. La documentación define el estado objetivo, no prueba implementación.",
   "status_semantics": {
     "pending": "No completado; no hay evidencia suficiente",
@@ -16,7 +15,8 @@
     "Inferencia autogestionada: vLLM objetivo producción si hardware lo permite, Sentence Transformers local para embeddings, Ollama solo desarrollo.",
     "Sin inferencia externa de pago por defecto; sin envío/publicación de campañas desde Peitho.",
     "Aislamiento por tenant en API, DB/RLS, workers, búsqueda, cachés, agentes, eventos y exportaciones.",
-    "La finalización exige comportamiento real, pruebas, seguridad, observabilidad, documentación y evidencia."
+    "La finalización exige comportamiento real, pruebas, seguridad, observabilidad, documentación y evidencia.",
+    "El esquema fuente de Inventary está versionado en catálogo separado: commit de origen, migraciones V1-V18 y 49 tablas declaradas; el catálogo no implica aprobación para replicar todas las tablas/columnas."
   ],
   "documents": [
     "AGENTS.md",
@@ -31,7 +31,9 @@
     "docs/contracts/",
     "docs/roadmap/implementation-checklist.md",
     "docs/roadmap/memory-capability-checklist.md",
-    "docs/development/local-docker-postgres.md"
+    "docs/development/local-docker-postgres.md",
+    "docs/integration/inventary-database-schema.md",
+    "docs/contracts/schemas/inventary-source-schema-catalog-v18.json"
   ],
   "nodes": [
     {
@@ -420,6 +422,20 @@
         "PEI-243"
       ],
       "deliverable": "Producto reproducible, operable y trazable al 100%"
+    },
+    {
+      "id": "P18",
+      "title": "Contrato de esquema fuente Inventary y detección de drift",
+      "status": "pending",
+      "task_ids": [
+        "PEI-244",
+        "PEI-245",
+        "PEI-246",
+        "PEI-247",
+        "PEI-248",
+        "PEI-249"
+      ],
+      "deliverable": "Catálogo validado, allowlist aprobada, namespace del espejo definido y pruebas de compatibilidad con la cadena Flyway de Inventary"
     }
   ],
   "edges": [
@@ -607,7 +623,38 @@
       "from": "P16",
       "to": "P17",
       "relation": "prerequisite_for"
+    },
+    {
+      "from": "P00",
+      "to": "P18",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P18",
+      "to": "P05",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P18",
+      "to": "P06",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P18",
+      "to": "P16",
+      "relation": "validated_by"
     }
   ],
-  "completion_rule": "No declarar 100% por cantidad de archivos o código. Exigir cobertura completa de requisitos, pruebas, seguridad, operación, documentación y evidencia CI en el commit entregado."
+  "completion_rule": "No declarar 100% por cantidad de archivos o código. Exigir cobertura completa de requisitos, pruebas, seguridad, operación, documentación y evidencia CI en el commit entregado. Se exige además validar el catálogo del esquema fuente de Inventary, la allowlist de columnas y las pruebas anti-drift asociadas al SHA desplegado.",
+  "source_schema_baseline": {
+    "repository": "https://github.com/JhonnyMinian92/inventary",
+    "branch": "master",
+    "commit": "083fc9f4ec97b8673de9f0e2adef6af195df65e5",
+    "migration_chain": "Flyway V1-V18",
+    "table_count": 49,
+    "catalog_markdown": "docs/integration/inventary-database-schema.md",
+    "catalog_json": "docs/contracts/schemas/inventary-source-schema-catalog-v18.json",
+    "publication_approved": false,
+    "caveat": "Derived from versioned SQL migrations; deployed database was not directly introspected."
+  }
 }

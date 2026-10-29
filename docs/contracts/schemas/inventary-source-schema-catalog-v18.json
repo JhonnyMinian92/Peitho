@@ -1,0 +1,1089 @@
+{
+  "catalog_version": "1.0.0",
+  "product": "Peitho",
+  "source": {
+    "repository": "https://github.com/JhonnyMinian92/inventary",
+    "branch": "master",
+    "commit": "083fc9f4ec97b8673de9f0e2adef6af195df65e5",
+    "authoritative_path": "microservices-inventary-ecuapp/src/main/resources/db/migration/",
+    "migration_chain": "Flyway V1-V18",
+    "table_count": 49,
+    "extraction_kind": "repository_migrations_not_live_database_introspection",
+    "caveat": "Inventary root README still says Flyway V1-V15; the source migration path contains V1-V18. Confirm deployed SHA and applied Flyway history before production replication."
+  },
+  "target_contract": {
+    "direction": "Inventary -> Peitho",
+    "write_to_source": false,
+    "primary_bulk_mode": "dedicated_logical_replication",
+    "point_validation": "authenticated_read_only_api",
+    "ddl_replicated_automatically": false,
+    "source_schema_transformations_by_native_replication": false,
+    "tenant_mapping": "per-source-connection configuration in Peitho; source schema has no tenant_id on operational rows",
+    "separate_source_mirror_namespace_required": true,
+    "actual_publication_approved": false
+  },
+  "migration_files": [
+    {
+      "version": "V1",
+      "file": "V1__create_core_schema.sql",
+      "blob_sha": "68fcf222ccad42bdfd375307617421228aee595b"
+    },
+    {
+      "version": "V2",
+      "file": "V2__partners_and_procurement.sql",
+      "blob_sha": "e32a0b7a254e393b807cf978f18534fd4f9863bd"
+    },
+    {
+      "version": "V3",
+      "file": "V3__audit_transfers_returns_and_media.sql",
+      "blob_sha": "4fd68c8462e82a82e448ff142148c3a859af64e5"
+    },
+    {
+      "version": "V4",
+      "file": "V4__purchase_returns_and_reorder_rules.sql",
+      "blob_sha": "a9f48e970e805357155300a688e4f5d247e8db32"
+    },
+    {
+      "version": "V5",
+      "file": "V5__whatsapp_carts_quotes_and_orders.sql",
+      "blob_sha": "87d125029393ffa32a15bbf887bdff76479744e4"
+    },
+    {
+      "version": "V6",
+      "file": "V6__sale_cancellation_movements.sql",
+      "blob_sha": "9fa68faed32ff5084c851f52f9b71cd3f927bf6c"
+    },
+    {
+      "version": "V7",
+      "file": "V7__case_insensitive_business_keys.sql",
+      "blob_sha": "d6bdf8f33c1626710bc260f58fcf1174f99c0a3d"
+    },
+    {
+      "version": "V8",
+      "file": "V8__link_sales_to_customers.sql",
+      "blob_sha": "b237ec84252a0cbd667330d94d0a9dcf19e8c7b9"
+    },
+    {
+      "version": "V9",
+      "file": "V9__complete_inventory_domain_schema.sql",
+      "blob_sha": "6d39e230d09e1dbe3d421556d9d876e25f9a2bb4"
+    },
+    {
+      "version": "V10",
+      "file": "V10__security_rbac_and_token_revocation.sql",
+      "blob_sha": "b46549e8e6fc3c8bc0291d85fe4eb607c40ac1e7"
+    },
+    {
+      "version": "V11",
+      "file": "V11__inventory_counts_and_ledger_hardening.sql",
+      "blob_sha": "9621ee893688dc5109c9e625512b7088798d615a"
+    },
+    {
+      "version": "V12",
+      "file": "V12__approved_sale_cancellations.sql",
+      "blob_sha": "fdc1f419b3d2f39f68e785ae3588e90788ce0acd"
+    },
+    {
+      "version": "V13",
+      "file": "V13__transfer_compensation_and_consistency.sql",
+      "blob_sha": "e3443f388813bb29db86a3b1eabea7e2ff06a491"
+    },
+    {
+      "version": "V14",
+      "file": "V14__costing_roles_and_operational_completion.sql",
+      "blob_sha": "f7d88e5b09a9f4f6e186cf7439b81a816a2d3264"
+    },
+    {
+      "version": "V15",
+      "file": "V15__idempotent_kafka_consumer_inbox.sql",
+      "blob_sha": "e29ebe90e7fa2c9f41b0563875dde6aec4c2328f"
+    },
+    {
+      "version": "V16",
+      "file": "V16__common_units_of_measure.sql",
+      "blob_sha": "3ddd82aa833f5c2a7580d29adcee7e17507730e6"
+    },
+    {
+      "version": "V17",
+      "file": "V17__product_margin_and_derived_prices.sql",
+      "blob_sha": "2ea12ffcc00678a4e54b178b3cf13ad48c062037"
+    },
+    {
+      "version": "V18",
+      "file": "V18__service_billing_and_subscriptions.sql",
+      "blob_sha": "7280628692792da1f744bc417558592ae3b2fd65"
+    }
+  ],
+  "tables": [
+    {
+      "name": "app_permission",
+      "migration": "V10,V14,V18",
+      "columns": [
+        "id",
+        "code",
+        "description",
+        "active",
+        "created_at"
+      ],
+      "replication": "exclude_by_default"
+    },
+    {
+      "name": "app_role",
+      "migration": "V10",
+      "columns": [
+        "id",
+        "code",
+        "display_name",
+        "active",
+        "created_at"
+      ],
+      "replication": "exclude_by_default"
+    },
+    {
+      "name": "app_role_permission",
+      "migration": "V10",
+      "columns": [
+        "role_id",
+        "permission_id",
+        "created_at"
+      ],
+      "replication": "exclude_by_default"
+    },
+    {
+      "name": "app_user",
+      "migration": "V1,V7,V10,V14",
+      "columns": [
+        "id",
+        "username",
+        "password_hash",
+        "role",
+        "active",
+        "created_at",
+        "token_version"
+      ],
+      "replication": "exclude_by_default",
+      "sensitive_columns": [
+        "username",
+        "password_hash"
+      ],
+      "reason": "Inventary authentication credentials must not be replicated to Peitho."
+    },
+    {
+      "name": "audit_event",
+      "migration": "V3",
+      "columns": [
+        "id",
+        "actor",
+        "action",
+        "resource_type",
+        "resource_id",
+        "outcome",
+        "correlation_id",
+        "metadata",
+        "occurred_at"
+      ],
+      "replication": "exclude_by_default",
+      "sensitive_columns": [
+        "actor",
+        "metadata"
+      ],
+      "reason": "Free-form metadata and access/audit scope should stay within Inventary unless a specific integration is approved."
+    },
+    {
+      "name": "business_partner",
+      "migration": "V2",
+      "columns": [
+        "id",
+        "code",
+        "partner_type",
+        "name",
+        "tax_id",
+        "email",
+        "phone",
+        "address",
+        "active",
+        "created_at",
+        "updated_at"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "name",
+        "tax_id",
+        "email",
+        "phone",
+        "address"
+      ],
+      "notes": "No raw PII by default; approve each column by purpose."
+    },
+    {
+      "name": "category",
+      "migration": "V1",
+      "columns": [
+        "id",
+        "name",
+        "slug",
+        "description",
+        "active",
+        "created_at",
+        "updated_at"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "category_attribute_definition",
+      "migration": "V9",
+      "columns": [
+        "id",
+        "category_id",
+        "attribute_key",
+        "display_name",
+        "value_type",
+        "required",
+        "constraints",
+        "options",
+        "schema_version",
+        "active",
+        "created_at",
+        "updated_at"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "goods_receipt",
+      "migration": "V2",
+      "columns": [
+        "id",
+        "receipt_number",
+        "status",
+        "purchase_order_id",
+        "warehouse_id",
+        "idempotency_key",
+        "request_hash",
+        "created_by",
+        "received_at",
+        "created_at"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "idempotency_key",
+        "request_hash",
+        "created_by"
+      ]
+    },
+    {
+      "name": "goods_receipt_line",
+      "migration": "V2",
+      "columns": [
+        "id",
+        "receipt_id",
+        "purchase_order_line_id",
+        "product_id",
+        "quantity",
+        "unit_cost",
+        "line_total"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "idempotency_record",
+      "migration": "V9",
+      "columns": [
+        "id",
+        "scope",
+        "idempotency_key",
+        "request_hash",
+        "status",
+        "resource_type",
+        "resource_id",
+        "response_status",
+        "response_body",
+        "created_at",
+        "completed_at"
+      ],
+      "replication": "exclude_by_default",
+      "sensitive_columns": [
+        "idempotency_key",
+        "request_hash",
+        "response_body"
+      ],
+      "reason": "May include request/response data and is operational infrastructure."
+    },
+    {
+      "name": "inventory_cost_layer",
+      "migration": "V9",
+      "columns": [
+        "id",
+        "product_id",
+        "warehouse_location_id",
+        "source_movement_id",
+        "received_quantity",
+        "remaining_quantity",
+        "unit_cost",
+        "currency",
+        "received_at",
+        "created_at"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "inventory_cost_state",
+      "migration": "V14",
+      "columns": [
+        "id",
+        "product_id",
+        "location_id",
+        "quantity",
+        "total_value",
+        "currency",
+        "version",
+        "updated_at"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "inventory_costing_config",
+      "migration": "V9,V14",
+      "columns": [
+        "id",
+        "singleton_key",
+        "method",
+        "effective_from",
+        "created_by",
+        "created_at",
+        "updated_by",
+        "updated_at"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "created_by",
+        "updated_by"
+      ]
+    },
+    {
+      "name": "inventory_count",
+      "migration": "V11",
+      "columns": [
+        "id",
+        "count_number",
+        "warehouse_id",
+        "status",
+        "idempotency_key",
+        "request_hash",
+        "created_by",
+        "created_at",
+        "posted_at"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "idempotency_key",
+        "request_hash",
+        "created_by"
+      ]
+    },
+    {
+      "name": "inventory_count_line",
+      "migration": "V11",
+      "columns": [
+        "id",
+        "inventory_count_id",
+        "product_id",
+        "expected_quantity",
+        "counted_quantity",
+        "unit_cost"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "inventory_valuation_entry",
+      "migration": "V9",
+      "columns": [
+        "id",
+        "stock_movement_id",
+        "cost_layer_id",
+        "method",
+        "quantity",
+        "unit_cost",
+        "total_cost",
+        "currency",
+        "created_at"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "kafka_inbox_event",
+      "migration": "V15",
+      "columns": [
+        "event_id",
+        "event_type",
+        "aggregate_type",
+        "aggregate_id",
+        "payload_sha256",
+        "received_at"
+      ],
+      "replication": "exclude_by_default"
+    },
+    {
+      "name": "outbox_event",
+      "migration": "V1,V14",
+      "columns": [
+        "id",
+        "aggregate_type",
+        "aggregate_id",
+        "event_type",
+        "payload",
+        "status",
+        "attempts",
+        "next_attempt_at",
+        "created_at",
+        "published_at",
+        "locked_until",
+        "last_error"
+      ],
+      "replication": "exclude_by_default",
+      "reason": "Transport/diagnostic infrastructure, not the source of analytical business facts."
+    },
+    {
+      "name": "product",
+      "migration": "V1,V9,V17,V18",
+      "columns": [
+        "id",
+        "sku",
+        "name",
+        "description",
+        "category_id",
+        "cost_price",
+        "sale_price",
+        "currency",
+        "image_url",
+        "active",
+        "created_at",
+        "updated_at",
+        "version",
+        "product_kind",
+        "unit_of_measure_id",
+        "attributes",
+        "attribute_schema_version",
+        "margin_percent",
+        "service_billing",
+        "billing_frequency",
+        "term_months"
+      ],
+      "replication": "candidate",
+      "sensitive_columns": [
+        "image_url"
+      ],
+      "notes": "Verify image URL does not contain signed credentials/tokens."
+    },
+    {
+      "name": "product_image",
+      "migration": "V3",
+      "columns": [
+        "id",
+        "product_id",
+        "image_url",
+        "alt_text",
+        "sort_order",
+        "is_primary",
+        "published",
+        "created_at"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "image_url"
+      ],
+      "notes": "Verify URL contains no credentials and doesn't expose private storage."
+    },
+    {
+      "name": "product_variant",
+      "migration": "V9,V14",
+      "columns": [
+        "id",
+        "product_id",
+        "sku",
+        "barcode",
+        "option_values",
+        "unit_of_measure_id",
+        "sale_price",
+        "active",
+        "created_at",
+        "updated_at"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "barcode"
+      ],
+      "notes": "SKU/barcode/options exist, but source migration does not define independent stock/cost per variant."
+    },
+    {
+      "name": "purchase_order",
+      "migration": "V2,V14",
+      "columns": [
+        "id",
+        "order_number",
+        "status",
+        "supplier_id",
+        "warehouse_id",
+        "currency",
+        "subtotal",
+        "total",
+        "notes",
+        "created_by",
+        "ordered_at",
+        "created_at",
+        "submitted_by",
+        "submitted_at",
+        "approved_by",
+        "approved_at",
+        "cancelled_by",
+        "cancelled_at"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "notes",
+        "created_by",
+        "submitted_by",
+        "approved_by",
+        "cancelled_by"
+      ]
+    },
+    {
+      "name": "purchase_order_line",
+      "migration": "V2",
+      "columns": [
+        "id",
+        "purchase_order_id",
+        "product_id",
+        "sku_snapshot",
+        "product_name_snapshot",
+        "ordered_quantity",
+        "received_quantity",
+        "unit_cost",
+        "line_total"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "purchase_return",
+      "migration": "V4",
+      "columns": [
+        "id",
+        "return_number",
+        "status",
+        "purchase_order_id",
+        "goods_receipt_id",
+        "warehouse_id",
+        "reason",
+        "idempotency_key",
+        "request_hash",
+        "created_by",
+        "created_at"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "reason",
+        "idempotency_key",
+        "request_hash",
+        "created_by"
+      ]
+    },
+    {
+      "name": "purchase_return_line",
+      "migration": "V4",
+      "columns": [
+        "id",
+        "purchase_return_id",
+        "source_goods_receipt_line_id",
+        "product_id",
+        "quantity",
+        "unit_cost",
+        "line_total"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "reorder_rule",
+      "migration": "V4",
+      "columns": [
+        "id",
+        "product_id",
+        "warehouse_id",
+        "minimum_quantity",
+        "target_quantity",
+        "lead_time_days",
+        "preferred_supplier_id",
+        "active",
+        "created_at",
+        "updated_at"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "sale",
+      "migration": "V1,V8,V12,V14,V18",
+      "columns": [
+        "id",
+        "sale_number",
+        "status",
+        "customer_name",
+        "customer_phone",
+        "channel",
+        "warehouse_id",
+        "subtotal",
+        "tax",
+        "total",
+        "currency",
+        "idempotency_key",
+        "request_hash",
+        "created_by",
+        "sold_at",
+        "created_at",
+        "customer_id",
+        "cancellation_reason",
+        "cancellation_requested_by",
+        "cancellation_requested_at",
+        "cancellation_approved_by",
+        "cancellation_approved_at"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "customer_name",
+        "customer_phone",
+        "idempotency_key",
+        "request_hash",
+        "created_by",
+        "cancellation_reason",
+        "cancellation_requested_by",
+        "cancellation_approved_by"
+      ]
+    },
+    {
+      "name": "sale_item",
+      "migration": "V1",
+      "columns": [
+        "id",
+        "sale_id",
+        "product_id",
+        "sku_snapshot",
+        "product_name_snapshot",
+        "quantity",
+        "unit_price",
+        "line_total"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "sales_return",
+      "migration": "V3",
+      "columns": [
+        "id",
+        "return_number",
+        "status",
+        "source_sale_id",
+        "warehouse_id",
+        "reason",
+        "idempotency_key",
+        "request_hash",
+        "created_by",
+        "created_at"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "reason",
+        "idempotency_key",
+        "request_hash",
+        "created_by"
+      ]
+    },
+    {
+      "name": "sales_return_line",
+      "migration": "V3",
+      "columns": [
+        "id",
+        "sales_return_id",
+        "source_sale_item_id",
+        "product_id",
+        "quantity",
+        "disposition",
+        "unit_price",
+        "line_total"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "security_lock",
+      "migration": "V14",
+      "columns": [
+        "lock_key",
+        "updated_at"
+      ],
+      "replication": "exclude_by_default"
+    },
+    {
+      "name": "stock_balance",
+      "migration": "V1,V9",
+      "columns": [
+        "id",
+        "product_id",
+        "warehouse_id",
+        "on_hand",
+        "reserved",
+        "version",
+        "updated_at",
+        "location_id"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "stock_movement",
+      "migration": "V1,V6,V9,V14",
+      "columns": [
+        "id",
+        "product_id",
+        "warehouse_id",
+        "movement_type",
+        "quantity",
+        "unit_cost",
+        "reference_type",
+        "reference_id",
+        "idempotency_key",
+        "request_hash",
+        "notes",
+        "created_by",
+        "occurred_at",
+        "from_location_id",
+        "to_location_id",
+        "unit_of_measure_id",
+        "source_line_id",
+        "correlation_id",
+        "valuation_method"
+      ],
+      "replication": "candidate",
+      "sensitive_columns": [
+        "notes",
+        "created_by",
+        "idempotency_key"
+      ]
+    },
+    {
+      "name": "stock_reservation",
+      "migration": "V9",
+      "columns": [
+        "id",
+        "reservation_number",
+        "sale_item_id",
+        "product_id",
+        "warehouse_location_id",
+        "quantity",
+        "status",
+        "idempotency_key",
+        "request_hash",
+        "expires_at",
+        "created_by",
+        "created_at",
+        "released_at"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "idempotency_key",
+        "request_hash",
+        "created_by"
+      ]
+    },
+    {
+      "name": "stock_transfer",
+      "migration": "V3,V13",
+      "columns": [
+        "id",
+        "transfer_number",
+        "status",
+        "source_warehouse_id",
+        "destination_warehouse_id",
+        "idempotency_key",
+        "request_hash",
+        "created_by",
+        "created_at",
+        "dispatched_at",
+        "completed_at",
+        "cancelled_at",
+        "cancelled_by",
+        "cancellation_reason",
+        "reversed_at",
+        "reversed_by",
+        "reversal_reason"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "idempotency_key",
+        "request_hash",
+        "created_by",
+        "cancelled_by",
+        "cancellation_reason",
+        "reversed_by",
+        "reversal_reason"
+      ]
+    },
+    {
+      "name": "stock_transfer_line",
+      "migration": "V3",
+      "columns": [
+        "id",
+        "transfer_id",
+        "product_id",
+        "sku_snapshot",
+        "product_name_snapshot",
+        "requested_quantity",
+        "received_quantity",
+        "unit_cost"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "subscription",
+      "migration": "V18",
+      "columns": [
+        "id",
+        "subscription_number",
+        "status",
+        "customer_id",
+        "product_id",
+        "warehouse_id",
+        "billing_frequency",
+        "term_months",
+        "monthly_price",
+        "total_amount",
+        "currency",
+        "start_date",
+        "end_date",
+        "prepaid",
+        "prepaid_discount_percent",
+        "prepaid_amount",
+        "cancellation_reason",
+        "cancelled_by",
+        "cancelled_at",
+        "last_billing_error",
+        "created_by",
+        "created_at",
+        "updated_at",
+        "version"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "cancellation_reason",
+        "cancelled_by",
+        "last_billing_error",
+        "created_by"
+      ]
+    },
+    {
+      "name": "subscription_installment",
+      "migration": "V18",
+      "columns": [
+        "id",
+        "subscription_id",
+        "sequence",
+        "period_start",
+        "period_end",
+        "billing_date",
+        "amount",
+        "status",
+        "sale_id",
+        "invoiced_at"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "unit_conversion",
+      "migration": "V9",
+      "columns": [
+        "id",
+        "from_unit_id",
+        "to_unit_id",
+        "factor",
+        "created_at"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "unit_of_measure",
+      "migration": "V9,V16",
+      "columns": [
+        "id",
+        "code",
+        "name",
+        "dimension",
+        "decimal_scale",
+        "active",
+        "created_at"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "warehouse",
+      "migration": "V1,V14",
+      "columns": [
+        "id",
+        "code",
+        "name",
+        "address",
+        "active",
+        "created_at",
+        "updated_at"
+      ],
+      "replication": "candidate",
+      "sensitive_columns": [
+        "address"
+      ]
+    },
+    {
+      "name": "warehouse_location",
+      "migration": "V9",
+      "columns": [
+        "id",
+        "warehouse_id",
+        "code",
+        "name",
+        "location_type",
+        "active",
+        "created_at",
+        "updated_at"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "whatsapp_cart",
+      "migration": "V5",
+      "columns": [
+        "id",
+        "customer_ref",
+        "status",
+        "created_at",
+        "updated_at",
+        "expires_at"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "customer_ref"
+      ],
+      "notes": "customer_ref may contain a phone number; do not replicate raw identifier by default."
+    },
+    {
+      "name": "whatsapp_cart_item",
+      "migration": "V5",
+      "columns": [
+        "id",
+        "cart_id",
+        "product_id",
+        "quantity",
+        "updated_at"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "whatsapp_order",
+      "migration": "V5,V14",
+      "columns": [
+        "id",
+        "order_number",
+        "cart_id",
+        "quote_id",
+        "warehouse_id",
+        "customer_ref",
+        "status",
+        "currency",
+        "subtotal",
+        "tax",
+        "total",
+        "idempotency_key",
+        "request_hash",
+        "expires_at",
+        "created_at",
+        "updated_at",
+        "sale_id",
+        "payment_reference",
+        "payment_method",
+        "confirmed_by",
+        "confirmed_at"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "customer_ref",
+        "idempotency_key",
+        "request_hash",
+        "payment_reference",
+        "confirmed_by"
+      ]
+    },
+    {
+      "name": "whatsapp_order_item",
+      "migration": "V5",
+      "columns": [
+        "id",
+        "order_id",
+        "product_id",
+        "sku_snapshot",
+        "product_name_snapshot",
+        "quantity",
+        "unit_price",
+        "line_total"
+      ],
+      "replication": "candidate"
+    },
+    {
+      "name": "whatsapp_quote",
+      "migration": "V5",
+      "columns": [
+        "id",
+        "quote_number",
+        "cart_id",
+        "warehouse_id",
+        "status",
+        "currency",
+        "subtotal",
+        "tax",
+        "total",
+        "idempotency_key",
+        "request_hash",
+        "expires_at",
+        "created_at"
+      ],
+      "replication": "candidate_with_column_filter",
+      "sensitive_columns": [
+        "idempotency_key",
+        "request_hash"
+      ]
+    },
+    {
+      "name": "whatsapp_quote_item",
+      "migration": "V5",
+      "columns": [
+        "id",
+        "quote_id",
+        "product_id",
+        "sku_snapshot",
+        "product_name_snapshot",
+        "quantity",
+        "unit_price",
+        "line_total"
+      ],
+      "replication": "candidate"
+    }
+  ],
+  "initial_exclusions": [
+    "app_user",
+    "app_role",
+    "app_permission",
+    "app_role_permission",
+    "security_lock",
+    "audit_event",
+    "outbox_event",
+    "kafka_inbox_event",
+    "idempotency_record"
+  ],
+  "replication_policy": {
+    "status": "candidate_not_approved",
+    "rule": "Do not consider a table or field approved for publication merely because it is catalogued here.",
+    "privacy_default": "Exclude direct identifiers and free-form text unless a documented purpose and access policy approves the exact columns.",
+    "identity_mapping": "Use source UUIDs and configure the associated Peitho tenant at the source-connection level; source operational tables have no tenant_id.",
+    "version_update_rule": "Every new/changed Inventary migration requires schema diff, catalog update, compatibility review, and replication/reconciliation tests."
+  }
+}

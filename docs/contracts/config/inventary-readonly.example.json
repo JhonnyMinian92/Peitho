@@ -10,7 +10,8 @@
   "publication": {
     "name": "SET_WITH_INVENTARY_OWNER",
     "approved_tables": [],
-    "schema_version": "SET_AFTER_CONTRACT_REVIEW"
+    "schema_version": "SET_AFTER_COMPARISON_WITH_DEPLOYED_INVENTARY_SHA",
+    "candidate_tables_ref": "docs/contracts/schemas/inventary-source-schema-catalog-v18.json#/tables"
   },
   "initial_load": {
     "required": true,
@@ -61,11 +62,26 @@
   "permissions": {
     "write_to_inventary": false,
     "arbitrary_sql_api": false,
-    "minimum_privileges": true
+    "minimum_privileges": true,
+    "replicate_sensitive_columns_by_default": false
   },
   "decision_behavior": {
     "stale_or_unreconciled_data": "block_or_mark_stock_sensitive_proposal_unconfirmed",
     "api_verification_failure": "never_claim_current_availability"
   },
-  "secrets_policy": "Store values in the deployment secret manager/environment, never in this file."
+  "secrets_policy": "Store values in the deployment secret manager/environment, never in this file.",
+  "source_schema_contract": {
+    "catalog_ref": "docs/contracts/schemas/inventary-source-schema-catalog-v18.json",
+    "documentation_ref": "docs/integration/inventary-database-schema.md",
+    "repository": "https://github.com/JhonnyMinian92/inventary",
+    "branch": "master",
+    "source_commit": "083fc9f4ec97b8673de9f0e2adef6af195df65e5",
+    "migration_chain": "Flyway V1-V18",
+    "table_count": 49,
+    "extraction": "versioned Flyway SQL migrations, not live database introspection",
+    "runtime_schema_verified": false,
+    "actual_publication_approved": false,
+    "require_schema_drift_check": true,
+    "privacy_review_required": true
+  }
 }

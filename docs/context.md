@@ -1590,3 +1590,15 @@ Desarrollar Peitho como **una plataforma enterprise multi-tenant con frontend An
 Peitho debe empezar demostrando que conoce el estado actual de las ventas, compras, recepciones, devoluciones y disponibilidad con calidad y frescura. Luego debe generar explicaciones y propuestas sujetas a guardas de inventario y margen. Por último, debe medir lo que realmente ocurrió al ejecutar externamente una propuesta y aprender de resultados positivos y negativos.
 
 El diferencial no es decir que usa IA, RFM, MMM o un algoritmo de forecasting. Es poder defender, para cada decisión: **qué sabemos, cómo lo sabemos, qué cambió, qué recomendamos, qué riesgo existe, quién responde por la decisión y qué evidencia posterior demuestra si funcionó**.
+
+
+## Baseline del esquema de Inventary para todos los agentes
+
+- Repositorio fuente revisado: `https://github.com/JhonnyMinian92/inventary`, `master`, commit `083fc9f4ec97b8673de9f0e2adef6af195df65e5`.
+- Fuente autoritativa en código: `microservices-inventary-ecuapp/src/main/resources/db/migration/V*__*.sql`, Flyway V1–V18, 49 tablas declaradas en el SQL versionado.
+- [Catálogo de tablas/campos, relaciones y semántica](integration/inventary-database-schema.md).
+- [Catálogo JSON para agentes](contracts/schemas/inventary-source-schema-catalog-v18.json).
+- La estructura de origen no se debe inferir desde el README de Inventary: en este snapshot el README dice V1–V15, pero la ruta fuente tiene V1–V18. La base productiva no fue introspectada en esta revisión; validar el SHA desplegado y el historial Flyway antes de activar replicación.
+- La publicación/columnas de réplica sigue pendiente de aprobación; el catálogo no implica autorización para copiar toda la tabla ni PII. Excluir credenciales, RBAC, Outbox, Inbox, idempotencia y metadata libre por defecto; aprobar por separado campos personales o texto libre.
+- La instancia de Inventary no declara `tenant_id` en las tablas operativas listadas. Peitho enlaza una fuente a un tenant mediante configuración de conexión y conserva IDs fuente sin modificarlos.
+- No alterar el esquema replicado ni aplicar allí migraciones de Peitho. Mantener las tablas propias de Peitho en un esquema distinto, porque la réplica lógica nativa no traduce nombres de tablas/esquemas ni anonimiza valores.

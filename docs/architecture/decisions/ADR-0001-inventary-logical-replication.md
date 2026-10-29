@@ -29,3 +29,14 @@ Aumenta el aislamiento de carga, pero requiere operar lag, conciliación, WAL, c
 - Tests negativos prueban que Peitho no puede ejecutar INSERT, UPDATE, DELETE, TRUNCATE, DDL ni funciones de escritura sobre Inventary.
 - Pruebas cubren atraso, ruptura de suscripción, esquema incompatible, conciliación fallida y verificación puntual por API.
 - Un snapshot de stock nunca se muestra como actual sin timestamp/lag y estado de conciliación.
+
+
+## Contrato versionado del esquema de origen
+
+Peitho mantiene el catálogo de esquema en [docs/integration/inventary-database-schema.md](../../integration/inventary-database-schema.md) y su versión legible por máquina en [inventary-source-schema-catalog-v18.json](../../contracts/schemas/inventary-source-schema-catalog-v18.json).
+
+El snapshot fuente revisado es el commit `083fc9f4ec97b8673de9f0e2adef6af195df65e5` del repositorio Inventary. La cadena SQL ubicada en `microservices-inventary-ecuapp/src/main/resources/db/migration/` contiene V1–V18 y define 49 tablas. El catálogo se deriva de esas migraciones, no de una introspección de la base productiva. El README de Inventary aún declara V1–V15; además, hay copias atrasadas bajo una ruta de salida de compilación. Antes de activar la réplica debe comprobarse el SHA de código desplegado y el historial Flyway aplicado en una instalación verificada.
+
+La publicación real sigue **sin aprobar**. El catálogo marca tablas candidatas/excluidas y campos potencialmente sensibles; no concede permiso automático para replicarlos. Por defecto se excluyen credenciales, RBAC de Inventary, auditoría libre, Outbox, Inbox e idempotencia, y se minimizan PII/texto libre. Una necesidad de incorporar columnas personales exige finalidad, permisos, retención, cifrado y auditoría documentados.
+
+La replicación lógica nativa preserva los nombres de esquema/tabla y no realiza transformaciones arbitrarias. Mantener las tablas espejo en un namespace compatible con el publicador y las tablas propias de Peitho en otro esquema, evitando colisiones de nombre. No añadir `tenant_id` ni campos derivados dentro del espejo: la asignación de la instancia fuente al tenant de Peitho se administra en la configuración de la conexión y las proyecciones propias.

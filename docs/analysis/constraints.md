@@ -20,3 +20,10 @@ Record mandatory technical, business, security, compatibility and operational co
 - **Mensajería comercial:** Peitho prepara análisis y borradores; no envía ni publica campañas ni inicia llamadas. Las acciones se ejecutan externamente y los resultados pueden importarse.
 - **Organización del código:** frontend objetivo `app-peitho-ecuapp`, backend objetivo `microservices-peitho-ecuapp`, backend modular con contratos JSON request/response, auditoría, sondas de salud, controles de escalabilidad y tests; formularios largos por stepper y sin `alert` nativo.
 - **SSOT:** [ADR-0001](../architecture/decisions/ADR-0001-inventary-logical-replication.md), [ADR-0002](../architecture/decisions/ADR-0002-autenticacion-local.md), [ADR-0003](../architecture/decisions/ADR-0003-pasarela-ia-autogestionada.md). En caso de divergencia, prevalece la decisión aceptada más reciente, no la formulación heredada del plan inicial.
+
+
+## Inventario de esquema fuente de Inventary (snapshot verificado en código)
+
+El modelo de Peitho y el esquema fuente de Inventary son contratos distintos. El catálogo propio de Peitho/RLS multiempresa no debe confundirse con el conjunto de tablas operativas de Inventary. En el snapshot `JhonnyMinian92/inventary@083fc9f4ec97b8673de9f0e2adef6af195df65e5`, las migraciones Flyway bajo `src/main/resources/db/migration` van de V1 a V18 y declaran 49 tablas. Consulta [el catálogo detallado](../integration/inventary-database-schema.md) y su [representación JSON](../contracts/schemas/inventary-source-schema-catalog-v18.json).
+
+Este catálogo representa el SQL versionado, no una introspección de una base desplegada. La publicación/columnas efectivas aún requieren aprobación. No replicar credenciales ni campos sensibles por defecto; la versión desplegada y el historial Flyway deben reconciliarse antes de producción. No basar la réplica en la descripción V1–V15 del README de Inventary, que está atrasada respecto de los archivos fuente V16–V18.

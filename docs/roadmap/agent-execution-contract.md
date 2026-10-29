@@ -35,7 +35,7 @@ Si documentos entran en contradicción, respetar primero las decisiones aceptada
 
 ## Reglas de implementación
 
-- PostgreSQL local del host es la base de datos para desarrollo local. Compose no debe iniciar otro PostgreSQL; los contenedores utilizan host.docker.internal y un usuario con privilegio mínimo.
+- PostgreSQL local del host es la base de datos para desarrollo local. El esquema fuente de Inventary se toma de la cadena Flyway versionada y su catálogo debe mantenerse sincronizado con el SHA desplegado; no suponer que el README refleja la última migración. Compose no debe iniciar otro PostgreSQL; los contenedores utilizan host.docker.internal y un usuario con privilegio mínimo.
 - Inventary es de solo lectura para Peitho. No permitir escrituras ni SQL arbitrario desde backend, agente, LLM o MCP.
 - Por defecto, la inferencia no sale hacia servicios pagos externos. No usar proveedor externo de LLM para “desbloquear” una tarea.
 - No enviar ni publicar campañas, correos, SMS, llamadas, mensajes o contenido social desde Peitho. Solo preparar borradores y registrar/importar resultados de ejecución externa.

@@ -27,11 +27,13 @@ Peitho es una plataforma de inteligencia comercial y CRM para preventa, venta y 
 
 El proyecto se define como **producto empresarial completo; no MVP**. El alcance se implementa por tareas verificables, sin recortar capacidades funcionales para considerar una primera entrega terminada.
 
-- [Roadmap integral e implementación PEI-001 a PEI-243](docs/roadmap/implementation-checklist.md)
+- [Roadmap integral e implementación PEI-001 a PEI-249](docs/roadmap/implementation-checklist.md)
 - [Grafo de fases y dependencias para agentes](docs/roadmap/task-graph.json)
 - [Contrato de ejecución para Claude Code, Codex, Gemini y otros agentes](docs/roadmap/agent-execution-contract.md)
 - [Checklist de memoria y grafo de conocimiento](docs/roadmap/memory-capability-checklist.md)
 - [Guía local Docker + PostgreSQL del host](docs/development/local-docker-postgres.md)
+- [Catálogo de esquema de Inventary: tablas, columnas, relaciones y reglas de réplica](docs/integration/inventary-database-schema.md)
+- [Catálogo JSON de esquema Inventary V1–V18](docs/contracts/schemas/inventary-source-schema-catalog-v18.json)
 
 ## Funcionalidad y estructura objetivo
 
