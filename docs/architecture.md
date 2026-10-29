@@ -103,8 +103,8 @@ Obsoleto: usar content en su lugar.
 # Project-specific architecture decisions
 
 These accepted ADRs override generic examples when a conflict exists:
-- [ADR-0001 — Dedicated logical replication from Inventary](decisions/ADR-0001-inventary-logical-replication.md): dedicated logical replication to Peitho PostgreSQL and a read-only API for point-in-time validation.
-- [ADR-0002 — Local authentication first](decisions/ADR-0002-autenticacion-local.md): local accounts, Argon2id, TOTP/passkeys, secure sessions and audit; no initial external federation.
-- [ADR-0003 — Self-hosted AI gateway](decisions/ADR-0003-pasarela-ia-autogestionada.md): vLLM for language models and Python/Sentence Transformers for embeddings; Ollama is development-only.
+- [ADR-0001 — Dedicated logical replication from Inventary](architecture/decisions/ADR-0001-inventary-logical-replication.md): dedicated logical replication to Peitho PostgreSQL and a read-only API for point-in-time validation.
+- [ADR-0002 — Local authentication first](architecture/decisions/ADR-0002-autenticacion-local.md): local accounts, Argon2id, TOTP/passkeys, secure sessions and audit; no initial external federation.
+- [ADR-0003 — Self-hosted AI gateway](architecture/decisions/ADR-0003-pasarela-ia-autogestionada.md): vLLM for language models and Python/Sentence Transformers for embeddings; Ollama is development-only.
 
 The machine-readable summary is [decisions.json](architecture/decisions/decisions.json). These records describe intended architecture, not proof of a production deployment.

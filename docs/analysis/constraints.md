@@ -2,10 +2,10 @@
 
 Record mandatory technical, business, security, compatibility and operational constraints.
 
-## Proposed changes (internal analysis)
+## Proposed changes (historical internal-analysis snapshot; not an implementation contract)
 
 - Estructuración del repositorio en dos carpetas raíz dedicadas: 'app-peitho-ecuapp' para el frontend Angular y 'microservices-peitho-ecuapp' para el backend FastAPI y workers analíticos.
-- Formalización de la base de datos PostgreSQL ampliada con pgvector, definiendo 41 tablas relacionales y semánticas con Row-Level Security (RLS) multiempresa obligatorio.
+- Propuesta histórica de modelo propio de Peitho: se estimaron inicialmente 41 tablas PostgreSQL con RLS multiempresa. Es una estimación de análisis, no un DDL final ni un catálogo aprobado; el modelo propio debe definirse, justificarse y probarse mediante PEI-076–PEI-079. No confundir ese número con el esquema fuente de Inventary, cuyo catálogo Flyway V1–V18 declara 49 tablas en `docs/integration/inventary-database-schema.md`.
 - Blindaje de integración con Inventary mediante usuario de base de datos con SELECT exclusivo sobre vistas/tablas de réplica, prohibiendo cualquier capacidad de escritura desde Peitho.
 - Exclusión estricta de cualquier dispatcher o credencial de envío/publicación hacia WhatsApp, SMS, llamadas o redes sociales, garantizando que Peitho únicamente genera propuestas auditables para revisión humana.
 - Autenticación local segura en el lanzamiento: Argon2id, MFA mediante TOTP o passkeys/WebAuthn, TLS, sesiones protegidas y auditoría; sin federación OIDC/SAML inicial. La federación queda como extensión futura aceptada mediante ADR.

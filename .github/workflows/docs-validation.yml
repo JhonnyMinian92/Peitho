@@ -1,0 +1,141 @@
+name: Documentation integrity
+
+on:
+  pull_request:
+  push:
+    branches: ["master"]
+
+permissions:
+  contents: read
+
+jobs:
+  validate-docs:
+    name: Validate JSON, roadmap, schema catalog and Markdown links
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate repository documentation
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          import sys
+          from collections import Counter
+          from pathlib import Path
+          from urllib.parse import unquote, urlsplit
+
+          root = Path.cwd()
+          errors = []
+
+          # Every committed JSON file must remain parseable.
+          json_files = sorted(root.rglob("*.json"))
+          for path in json_files:
+              if ".git" in path.parts:
+                  continue
+              try:
+                  json.loads(path.read_text(encoding="utf-8"))
+              except Exception as exc:
+                  errors.append(f"JSON inválido: {path.relative_to(root)}: {exc}")
+
+          checklist_path = root / "docs/roadmap/implementation-checklist.md"
+          graph_path = root / "docs/roadmap/task-graph.json"
+          catalog_path = root / "docs/contracts/schemas/inventary-source-schema-catalog-v18.json"
+          catalog_md_path = root / "docs/integration/inventary-database-schema.md"
+          inventary_config_path = root / "docs/contracts/config/inventary-readonly.example.json"
+
+          try:
+              checklist = checklist_path.read_text(encoding="utf-8")
+              task_ids = re.findall(r"^- \[ \] \*\*(PEI-\d{3})\*\*", checklist, re.MULTILINE)
+              task_counts = Counter(task_ids)
+              if not task_ids:
+                  errors.append("El checklist no contiene definiciones de tareas PEI.")
+              if len(task_ids) != len(task_counts):
+                  errors.append("Hay IDs PEI duplicados en implementation-checklist.md.")
+              numbers = sorted(int(task_id.split("-")[1]) for task_id in task_ids)
+              if numbers and numbers != list(range(1, max(numbers) + 1)):
+                  errors.append("Los IDs PEI no son consecutivos desde PEI-001.")
+          except Exception as exc:
+              checklist = ""
+              task_ids = []
+              errors.append(f"No se puede leer el checklist PEI: {exc}")
+
+          try:
+              graph = json.loads(graph_path.read_text(encoding="utf-8"))
+              nodes = graph.get("nodes", [])
+              edges = graph.get("edges", [])
+              node_ids = {node.get("id") for node in nodes}
+              graph_task_ids = [
+                  task_id
+                  for node in nodes
+                  for task_id in node.get("task_ids", [])
+              ]
+              graph_counts = Counter(graph_task_ids)
+              if Counter(task_ids) != graph_counts:
+                  errors.append("Las tareas PEI del grafo no coinciden uno-a-uno con las definiciones del checklist.")
+              invalid_edges = [
+                  edge for edge in edges
+                  if edge.get("from") not in node_ids or edge.get("to") not in node_ids
+              ]
+              if invalid_edges:
+                  errors.append(f"El grafo contiene aristas con nodos inexistentes: {invalid_edges}")
+              if not graph.get("execution_gate"):
+                  errors.append("task-graph.json debe declarar la compuerta de activación del agente.")
+          except Exception as exc:
+              errors.append(f"Grafo de tareas inválido: {exc}")
+
+          try:
+              catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+              catalog_tables = [table.get("name") for table in catalog.get("tables", [])]
+              if len(catalog_tables) != len(set(catalog_tables)):
+                  errors.append("El catálogo JSON de Inventary contiene nombres de tabla duplicados.")
+              if catalog.get("source", {}).get("table_count") != len(catalog_tables):
+                  errors.append("source.table_count no coincide con el número de tablas del catálogo JSON.")
+              md_catalog = catalog_md_path.read_text(encoding="utf-8")
+              markdown_tables = re.findall(r"^- \*\*\`([a-z_]+)\`\*\*", md_catalog, re.MULTILINE)
+              if set(markdown_tables) != set(catalog_tables):
+                  missing_md = sorted(set(catalog_tables) - set(markdown_tables))
+                  extra_md = sorted(set(markdown_tables) - set(catalog_tables))
+                  errors.append(f"Catálogo Markdown/JSON divergente; faltan en Markdown={missing_md}, extras={extra_md}.")
+              config = json.loads(inventary_config_path.read_text(encoding="utf-8"))
+              ref = config.get("source_schema_contract", {}).get("catalog_ref")
+              if not ref or not (root / ref).exists():
+                  errors.append("La configuración de Inventary debe apuntar a un catálogo de esquema existente.")
+          except Exception as exc:
+              errors.append(f"No se puede validar el catálogo de Inventary: {exc}")
+
+          # Check relative Markdown links against repository contents.
+          link_pattern = re.compile(r"\[[^\]]*\]\(([^)]+)\)")
+          for doc in sorted(root.rglob("*.md")):
+              if ".git" in doc.parts:
+                  continue
+              content = doc.read_text(encoding="utf-8")
+              for match in link_pattern.finditer(content):
+                  raw = match.group(1).strip().split()[0].strip("<>")
+                  if not raw or raw.startswith("#"):
+                      continue
+                  parts = urlsplit(raw)
+                  if parts.scheme or parts.netloc:
+                      continue
+                  target_path = unquote(parts.path)
+                  if not target_path:
+                      continue
+                  target = (root / target_path.lstrip("/")) if target_path.startswith("/") else (doc.parent / target_path)
+                  if not target.exists():
+                      line = content.count("\n", 0, match.start()) + 1
+                      errors.append(f"Enlace Markdown roto: {doc.relative_to(root)}:{line} -> {raw}")
+
+          if errors:
+              print("Falló la validación de documentación:")
+              for error in errors:
+                  print(f" - {error}")
+              sys.exit(1)
+
+          print(
+              f"Validación correcta: {len(json_files)} JSON, {len(task_ids)} tareas PEI, "
+              f"{len(graph.get('nodes', []))} nodos, {len(graph.get('edges', []))} aristas, "
+              f"{len(catalog_tables)} tablas de Inventary y enlaces Markdown locales."
+          )
+          PY

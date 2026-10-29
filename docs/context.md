@@ -14,8 +14,7 @@ Database notes: El layout objetivo en la raíz incluye app-peitho-ecuapp para el
 **Estado:** propuesta de producto y arquitectura; no declara implementadas estas funciones  
 **Sistema transaccional relacionado:** Inventary  
 **Principio central:** Peitho observa hechos, aprende de resultados, determina oportunidades y prepara propuestas. **No envía ni publica campañas, mensajes, correos, llamadas, SMS ni contenido en redes sociales.**  
-**Demo conceptual interactivo:** [Abrir `DEMO_PEITHO_CONCEPTO.html`](DEMO_PEITHO_CONCEPTO.html)  
-**Vista estática de la interfaz:** [Ver `DEMO_PEITHO_VISTA_PREVIA.png`](DEMO_PEITHO_VISTA_PREVIA.png)
+**Nota de artefactos visuales:** el snapshot actual del repositorio no contiene `DEMO_PEITHO_CONCEPTO.html` ni `DEMO_PEITHO_VISTA_PREVIA.png`; no son dependencias ni evidencia de funcionalidad. El estado real y el plan de implementación se encuentran en `README.md` y `docs/roadmap/`.
 
 ---
 
@@ -549,7 +548,7 @@ Una propuesta creativa debe incluir:
 - Fuente de cada claim verificable y checklist de marca, legal, stock, compatibilidad, términos comerciales y accesibilidad.
 - Previsualización de ejemplo en el frontend. Todo mockup sintético se etiqueta claramente como conceptual y no se presenta como anuncio ya publicado.
 
-El demo [DEMO_PEITHO_CONCEPTO.html](DEMO_PEITHO_CONCEPTO.html) enseña el resultado esperado: panel accionable, estado de sincronización de lectura, propuesta con guardas de inventario, vista de pieza creativa y acciones de revisión/exportación. [La vista estática del mismo concepto](DEMO_PEITHO_VISTA_PREVIA.png) permite revisar visualmente el layout sin abrir el HTML. Los datos allí son ficticios.
+La demo conceptual y su vista estática citadas en versiones anteriores de este documento no están incluidas en el snapshot actual del repositorio. No deben usarse como evidencia de implementación ni como dependencias; los criterios funcionales se validan con el código real y las pruebas definidas en el roadmap.
 
 ---
 

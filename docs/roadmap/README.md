@@ -18,3 +18,8 @@ Este directorio contiene los artefactos para que personas y agentes implementen 
 - Cada tarea cerrada debe referenciar commit/PR, CI, pruebas y documentación aplicable.
 - Si cambia una decisión aceptada o un invariante, actualizar ADR/contratos antes de cambiar código.
 - Un agente nuevo debe poder reconstruir la intención y las dependencias leyendo los archivos enlazados sin depender de explicaciones en chat.
+
+
+## Gate de ejecución
+
+Consulta [agent-readiness-audit.md](agent-readiness-audit.md) antes de activar un agente autónomo. El roadmap es el destino de trabajo, no reemplaza la cola operativa de Mnemosine. Si el estado de Mnemosine todavía dice `INITIALIZED`/cero tareas o el análisis final está pendiente, el dictamen es NO-GO para generar código. Cuando la activación esté completa, ejecutar las tareas de forma continua y respetar bloqueos, permisos y pruebas.

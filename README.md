@@ -23,6 +23,10 @@ Peitho es una plataforma de inteligencia comercial y CRM para preventa, venta y 
 - [Decisiones legibles por máquina](docs/architecture/decisions/decisions.json)
 - [Configuraciones de ejemplo y esquemas JSON](docs/contracts/)
 
+## Estado de preparación del agente
+
+**Auditoría vigente: NO-GO para iniciar todavía la generación autónoma de código.** El estado operativo de Mnemosine sigue mostrando proyecto inicializado y cero tareas, mientras `AGENTS.md` exige que el análisis final y la materialización de memoria hayan concluido. Revisa [la auditoría de preparación y los pasos para pasar a GO](docs/roadmap/agent-readiness-audit.md). No edites los archivos de estado derivados a mano para saltarte esa compuerta.
+
 ## Plan de implementación hasta el 100%
 
 El proyecto se define como **producto empresarial completo; no MVP**. El alcance se implementa por tareas verificables, sin recortar capacidades funcionales para considerar una primera entrega terminada.
@@ -30,6 +34,7 @@ El proyecto se define como **producto empresarial completo; no MVP**. El alcance
 - [Roadmap integral e implementación PEI-001 a PEI-249](docs/roadmap/implementation-checklist.md)
 - [Grafo de fases y dependencias para agentes](docs/roadmap/task-graph.json)
 - [Contrato de ejecución para Claude Code, Codex, Gemini y otros agentes](docs/roadmap/agent-execution-contract.md)
+- [Auditoría de preparación: condiciones para empezar y ejecución continua](docs/roadmap/agent-readiness-audit.md)
 - [Checklist de memoria y grafo de conocimiento](docs/roadmap/memory-capability-checklist.md)
 - [Guía local Docker + PostgreSQL del host](docs/development/local-docker-postgres.md)
 - [Catálogo de esquema de Inventary: tablas, columnas, relaciones y reglas de réplica](docs/integration/inventary-database-schema.md)

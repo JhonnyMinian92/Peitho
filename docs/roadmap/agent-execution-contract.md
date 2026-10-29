@@ -54,3 +54,22 @@ La tarea está terminada únicamente cuando cumple sus criterios funcionales, pr
 ## Definición del producto al 100%
 
 Usar la sección “Criterio objetivo de completitud del 100%” en el checklist integral. El porcentaje no se calcula contando archivos ni líneas de código: se calcula mediante cobertura requisito-tarea-prueba-evidencia, con bloqueo total cuando queda un requisito obligatorio no resuelto.
+
+
+## Compuerta obligatoria de activación
+
+Antes de crear carpetas o código de aplicación, comprobar el procedimiento obligatorio de `AGENTS.md`. El agente debe obtener el briefing y estado vigentes de Mnemosine; verificar que las memorias seleccionadas están materializadas, el análisis interno final terminó, las preguntas obligatorias están resueltas, no existen preguntas bloqueantes y hay tareas operativas listas. Los archivos `docs/memory/*.json`, `docs/task.md` y el plan final pueden ser snapshots derivados; no editarlos para simular que el proyecto está activo.
+
+En el snapshot actualmente documentado, Mnemosine indica `INITIALIZED`, `pending`, cero tareas y análisis final pendiente. Consulta [la auditoría de preparación](agent-readiness-audit.md). Hasta que Mnemosine confirme el gate, no iniciar la implementación de las aplicaciones.
+
+## Ejecución continua hasta completar el producto
+
+Una vez activo, mantener un ciclo continuo sin límite arbitrario de número de tareas: pedir la siguiente tarea lista, reclamarla, revisar dependencias, implementar, probar, revisar seguridad, documentar y registrar evidencia; después pedir la siguiente tarea lista. El mandato del usuario es completar el alcance entero, no detenerse al terminar una fase temprana.
+
+- Materializar en Mnemosine las tareas PEI del roadmap si todavía faltan. No asumir que un checklist Markdown es el backlog operativo.
+- Dividir una tarea extensa en subtareas gobernadas por Mnemosine, preservando la relación con su ID PEI y añadiendo criterios automatizados identificables por ID.
+- Si una tarea está bloqueada, registrar motivo, evidencia y condición para desbloquearla; continuar con una tarea independiente que esté lista.
+- Si no existen tareas listas, no hacer polling infinito ni afirmar que se completó el proyecto. Resolver la dependencia o reportar el bloqueo operativo exacto.
+- No modificar los archivos derivados de Mnemosine para falsificar estado o progreso; sincronizar los cambios por sus mecanismos autorizados.
+- No saltarse pruebas, controles de seguridad, aprobaciones de cambios destructivos, ni los límites de solo lectura de Inventary para avanzar más rápido.
+- No terminar con una primera versión, una demo, un mock o solo la compilación. Continuar hasta que el checklist y todas sus subtareas estén cerrados con evidencia.
