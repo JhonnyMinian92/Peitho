@@ -1,0 +1,613 @@
+{
+  "schema_version": "1.0.0",
+  "project": "Peitho",
+  "updated_for_commit": "4ecf39062bcb15c059890cee956a8e28db7569dc",
+  "objective": "Producto empresarial completo; no MVP. La documentación define el estado objetivo, no prueba implementación.",
+  "status_semantics": {
+    "pending": "No completado; no hay evidencia suficiente",
+    "completed": "Implementado y validado, con commit/PR, CI y pruebas",
+    "not_applicable": "Solo válido con ADR aprobado y pruebas de que la exclusión no rompe el producto"
+  },
+  "invariants": [
+    "Inventary es la autoridad transaccional; Peitho no escribe ni ejecuta DDL allí.",
+    "Integración principal: réplica lógica dedicada a PostgreSQL de Peitho; API interna de solo lectura para validaciones puntuales.",
+    "En desarrollo local las aplicaciones se ejecutan con Docker y PostgreSQL+pgvector corre en el host; Compose no inicia PostgreSQL.",
+    "Autenticación inicial local con Argon2id, TOTP/passkeys, sesiones seguras y auditoría; sin IDP externo inicial.",
+    "Inferencia autogestionada: vLLM objetivo producción si hardware lo permite, Sentence Transformers local para embeddings, Ollama solo desarrollo.",
+    "Sin inferencia externa de pago por defecto; sin envío/publicación de campañas desde Peitho.",
+    "Aislamiento por tenant en API, DB/RLS, workers, búsqueda, cachés, agentes, eventos y exportaciones.",
+    "La finalización exige comportamiento real, pruebas, seguridad, observabilidad, documentación y evidencia."
+  ],
+  "documents": [
+    "AGENTS.md",
+    "README.md",
+    "docs/context.md",
+    "docs/flow.md",
+    "docs/functionality.md",
+    "docs/architecture.md",
+    "docs/architecture/decisions/",
+    "docs/analysis/constraints.md",
+    "docs/analysis/production_profile.md",
+    "docs/contracts/",
+    "docs/roadmap/implementation-checklist.md",
+    "docs/roadmap/memory-capability-checklist.md",
+    "docs/development/local-docker-postgres.md"
+  ],
+  "nodes": [
+    {
+      "id": "P00",
+      "title": "Descubrimiento y trazabilidad",
+      "status": "pending",
+      "task_ids": [
+        "PEI-001",
+        "PEI-002",
+        "PEI-003",
+        "PEI-004",
+        "PEI-005",
+        "PEI-006",
+        "PEI-007",
+        "PEI-008",
+        "PEI-009",
+        "PEI-010"
+      ],
+      "deliverable": "Matriz de requisitos, riesgos, ADRs y grafo mantenible"
+    },
+    {
+      "id": "P01",
+      "title": "Repositorio y entorno local Docker/PostgreSQL host",
+      "status": "pending",
+      "task_ids": [
+        "PEI-011",
+        "PEI-012",
+        "PEI-013",
+        "PEI-014",
+        "PEI-015",
+        "PEI-016",
+        "PEI-017",
+        "PEI-018",
+        "PEI-019",
+        "PEI-020",
+        "PEI-021",
+        "PEI-022",
+        "PEI-023",
+        "PEI-024",
+        "PEI-025",
+        "PEI-026",
+        "PEI-027",
+        "PEI-028",
+        "PEI-029"
+      ],
+      "deliverable": "Aplicaciones reproducibles en Docker y conexión segura a PostgreSQL local"
+    },
+    {
+      "id": "P02",
+      "title": "Arquitectura y contratos",
+      "status": "pending",
+      "task_ids": [
+        "PEI-030",
+        "PEI-031",
+        "PEI-032",
+        "PEI-033",
+        "PEI-034",
+        "PEI-035",
+        "PEI-036",
+        "PEI-037",
+        "PEI-038",
+        "PEI-039",
+        "PEI-040",
+        "PEI-041",
+        "PEI-042",
+        "PEI-043",
+        "PEI-044",
+        "PEI-045"
+      ],
+      "deliverable": "Backend modular, contratos JSON/OpenAPI y jobs confiables"
+    },
+    {
+      "id": "P03",
+      "title": "Frontend y UX",
+      "status": "pending",
+      "task_ids": [
+        "PEI-046",
+        "PEI-047",
+        "PEI-048",
+        "PEI-049",
+        "PEI-050",
+        "PEI-051",
+        "PEI-052",
+        "PEI-053",
+        "PEI-054",
+        "PEI-055",
+        "PEI-056",
+        "PEI-057",
+        "PEI-058",
+        "PEI-059",
+        "PEI-060"
+      ],
+      "deliverable": "Journeys Angular accesibles, responsive y completos"
+    },
+    {
+      "id": "P04",
+      "title": "IAM, tenancy, autorización y privacidad",
+      "status": "pending",
+      "task_ids": [
+        "PEI-061",
+        "PEI-062",
+        "PEI-063",
+        "PEI-064",
+        "PEI-065",
+        "PEI-066",
+        "PEI-067",
+        "PEI-068",
+        "PEI-069",
+        "PEI-070",
+        "PEI-071",
+        "PEI-072",
+        "PEI-073",
+        "PEI-074",
+        "PEI-075"
+      ],
+      "deliverable": "Seguridad comprobada en todos los límites"
+    },
+    {
+      "id": "P05",
+      "title": "PostgreSQL e integración Inventary",
+      "status": "pending",
+      "task_ids": [
+        "PEI-076",
+        "PEI-077",
+        "PEI-078",
+        "PEI-079",
+        "PEI-080",
+        "PEI-081",
+        "PEI-082",
+        "PEI-083",
+        "PEI-084",
+        "PEI-085",
+        "PEI-086",
+        "PEI-087",
+        "PEI-088",
+        "PEI-089",
+        "PEI-090",
+        "PEI-091",
+        "PEI-092",
+        "PEI-093",
+        "PEI-094",
+        "PEI-095"
+      ],
+      "deliverable": "Datos reconciliados y fuente Inventary inmutable desde Peitho"
+    },
+    {
+      "id": "P06",
+      "title": "Ingesta y conectores",
+      "status": "pending",
+      "task_ids": [
+        "PEI-096",
+        "PEI-097",
+        "PEI-098",
+        "PEI-099",
+        "PEI-100",
+        "PEI-101",
+        "PEI-102",
+        "PEI-103",
+        "PEI-104",
+        "PEI-105",
+        "PEI-106",
+        "PEI-107"
+      ],
+      "deliverable": "Pipelines idempotentes, monitorizados y reproducibles"
+    },
+    {
+      "id": "P07",
+      "title": "CRM y visión 360",
+      "status": "pending",
+      "task_ids": [
+        "PEI-108",
+        "PEI-109",
+        "PEI-110",
+        "PEI-111",
+        "PEI-112",
+        "PEI-113",
+        "PEI-114",
+        "PEI-115",
+        "PEI-116",
+        "PEI-117",
+        "PEI-118",
+        "PEI-119",
+        "PEI-120"
+      ],
+      "deliverable": "CRM multiempresa con identidad y timeline auditables"
+    },
+    {
+      "id": "P08",
+      "title": "Contexto operativo y métricas",
+      "status": "pending",
+      "task_ids": [
+        "PEI-121",
+        "PEI-122",
+        "PEI-123",
+        "PEI-124",
+        "PEI-125",
+        "PEI-126",
+        "PEI-127",
+        "PEI-128",
+        "PEI-129",
+        "PEI-130",
+        "PEI-131"
+      ],
+      "deliverable": "Métricas reproducibles de negocio, inventario y logística"
+    },
+    {
+      "id": "P09",
+      "title": "Machine Learning y gobierno",
+      "status": "pending",
+      "task_ids": [
+        "PEI-132",
+        "PEI-133",
+        "PEI-134",
+        "PEI-135",
+        "PEI-136",
+        "PEI-137",
+        "PEI-138",
+        "PEI-139",
+        "PEI-140",
+        "PEI-141",
+        "PEI-142",
+        "PEI-143",
+        "PEI-144",
+        "PEI-145",
+        "PEI-146",
+        "PEI-147"
+      ],
+      "deliverable": "Modelos contrastados con baseline, calibración y fallback"
+    },
+    {
+      "id": "P10",
+      "title": "Motor prescriptivo",
+      "status": "pending",
+      "task_ids": [
+        "PEI-148",
+        "PEI-149",
+        "PEI-150",
+        "PEI-151",
+        "PEI-152",
+        "PEI-153",
+        "PEI-154",
+        "PEI-155",
+        "PEI-156"
+      ],
+      "deliverable": "Propuestas rentables, explicables y sujetas a guardas"
+    },
+    {
+      "id": "P11",
+      "title": "IA local, RAG y memoria",
+      "status": "pending",
+      "task_ids": [
+        "PEI-157",
+        "PEI-158",
+        "PEI-159",
+        "PEI-160",
+        "PEI-161",
+        "PEI-162",
+        "PEI-163",
+        "PEI-164",
+        "PEI-165",
+        "PEI-166",
+        "PEI-167",
+        "PEI-168",
+        "PEI-169",
+        "PEI-170",
+        "PEI-171",
+        "PEI-172"
+      ],
+      "deliverable": "Gateway local, embeddings versionados, memoria evaluada y segura"
+    },
+    {
+      "id": "P12",
+      "title": "Studio de propuestas y aprobación humana",
+      "status": "pending",
+      "task_ids": [
+        "PEI-173",
+        "PEI-174",
+        "PEI-175",
+        "PEI-176",
+        "PEI-177",
+        "PEI-178",
+        "PEI-179",
+        "PEI-180",
+        "PEI-181",
+        "PEI-182",
+        "PEI-183",
+        "PEI-184"
+      ],
+      "deliverable": "Borradores auditables, sin envío/publicación desde Peitho"
+    },
+    {
+      "id": "P13",
+      "title": "Experimentación y evidencia",
+      "status": "pending",
+      "task_ids": [
+        "PEI-185",
+        "PEI-186",
+        "PEI-187",
+        "PEI-188",
+        "PEI-189",
+        "PEI-190",
+        "PEI-191",
+        "PEI-192"
+      ],
+      "deliverable": "Evaluación causal rigurosa y memoria organizacional"
+    },
+    {
+      "id": "P14",
+      "title": "API B2B, webhooks, SSE, MCP",
+      "status": "pending",
+      "task_ids": [
+        "PEI-193",
+        "PEI-194",
+        "PEI-195",
+        "PEI-196",
+        "PEI-197",
+        "PEI-198",
+        "PEI-199",
+        "PEI-200",
+        "PEI-201",
+        "PEI-202"
+      ],
+      "deliverable": "Interoperabilidad con permisos, límites y auditoría"
+    },
+    {
+      "id": "P15",
+      "title": "Observabilidad y operación",
+      "status": "pending",
+      "task_ids": [
+        "PEI-203",
+        "PEI-204",
+        "PEI-205",
+        "PEI-206",
+        "PEI-207",
+        "PEI-208",
+        "PEI-209",
+        "PEI-210",
+        "PEI-211",
+        "PEI-212",
+        "PEI-213",
+        "PEI-214"
+      ],
+      "deliverable": "Operación, monitoreo y recuperación verificables"
+    },
+    {
+      "id": "P16",
+      "title": "Calidad y CI/CD",
+      "status": "pending",
+      "task_ids": [
+        "PEI-215",
+        "PEI-216",
+        "PEI-217",
+        "PEI-218",
+        "PEI-219",
+        "PEI-220",
+        "PEI-221",
+        "PEI-222",
+        "PEI-223",
+        "PEI-224",
+        "PEI-225",
+        "PEI-226",
+        "PEI-227",
+        "PEI-228",
+        "PEI-229",
+        "PEI-230"
+      ],
+      "deliverable": "Quality gates para toda la superficie de riesgo"
+    },
+    {
+      "id": "P17",
+      "title": "Despliegue y aceptación completa",
+      "status": "pending",
+      "task_ids": [
+        "PEI-231",
+        "PEI-232",
+        "PEI-233",
+        "PEI-234",
+        "PEI-235",
+        "PEI-236",
+        "PEI-237",
+        "PEI-238",
+        "PEI-239",
+        "PEI-240",
+        "PEI-241",
+        "PEI-242",
+        "PEI-243"
+      ],
+      "deliverable": "Producto reproducible, operable y trazable al 100%"
+    }
+  ],
+  "edges": [
+    {
+      "from": "P00",
+      "to": "P01",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P01",
+      "to": "P02",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P02",
+      "to": "P03",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P02",
+      "to": "P04",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P01",
+      "to": "P05",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P04",
+      "to": "P05",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P05",
+      "to": "P06",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P06",
+      "to": "P07",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P05",
+      "to": "P08",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P07",
+      "to": "P08",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P08",
+      "to": "P09",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P09",
+      "to": "P10",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P04",
+      "to": "P11",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P05",
+      "to": "P11",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P08",
+      "to": "P11",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P10",
+      "to": "P12",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P11",
+      "to": "P12",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P12",
+      "to": "P13",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P02",
+      "to": "P14",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P04",
+      "to": "P14",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P05",
+      "to": "P15",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P09",
+      "to": "P15",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P11",
+      "to": "P15",
+      "relation": "prerequisite_for"
+    },
+    {
+      "from": "P03",
+      "to": "P16",
+      "relation": "validated_by"
+    },
+    {
+      "from": "P04",
+      "to": "P16",
+      "relation": "validated_by"
+    },
+    {
+      "from": "P05",
+      "to": "P16",
+      "relation": "validated_by"
+    },
+    {
+      "from": "P06",
+      "to": "P16",
+      "relation": "validated_by"
+    },
+    {
+      "from": "P07",
+      "to": "P16",
+      "relation": "validated_by"
+    },
+    {
+      "from": "P08",
+      "to": "P16",
+      "relation": "validated_by"
+    },
+    {
+      "from": "P09",
+      "to": "P16",
+      "relation": "validated_by"
+    },
+    {
+      "from": "P10",
+      "to": "P16",
+      "relation": "validated_by"
+    },
+    {
+      "from": "P11",
+      "to": "P16",
+      "relation": "validated_by"
+    },
+    {
+      "from": "P12",
+      "to": "P16",
+      "relation": "validated_by"
+    },
+    {
+      "from": "P13",
+      "to": "P16",
+      "relation": "validated_by"
+    },
+    {
+      "from": "P14",
+      "to": "P16",
+      "relation": "validated_by"
+    },
+    {
+      "from": "P15",
+      "to": "P16",
+      "relation": "validated_by"
+    },
+    {
+      "from": "P16",
+      "to": "P17",
+      "relation": "prerequisite_for"
+    }
+  ],
+  "completion_rule": "No declarar 100% por cantidad de archivos o código. Exigir cobertura completa de requisitos, pruebas, seguridad, operación, documentación y evidencia CI en el commit entregado."
+}
