@@ -1,0 +1,100 @@
+{
+  "catalog": {
+    "architecture": [
+      "architectures/hexagonal.md",
+      "architectures/layered.md",
+      "architectures/adr.md"
+    ],
+    "database": [
+      "databases/optimistic_concurrency.md",
+      "databases/transaction_boundary.md"
+    ],
+    "design_pattern": [
+      "patterns/api/idempotency_key.md",
+      "patterns/backend/repository.md",
+      "patterns/backend/strategy.md",
+      "patterns/backend/adapter.md",
+      "patterns/integration/outbox.md",
+      "patterns/mobile/unidirectional_data_flow.md",
+      "patterns/integration/anti_corruption_layer.md",
+      "patterns/frontend/container_presentational.md",
+      "patterns/authentication/implementation.md",
+      "patterns/api/versioned_contract.md",
+      "patterns/api/pagination.md"
+    ],
+    "language": [
+      "languages/python.md",
+      "languages/typescript.md"
+    ],
+    "version": [
+      "versions/python-3.12.md"
+    ],
+    "framework": [
+      "frameworks/fastapi.md"
+    ],
+    "role": [
+      "roles/backend_developer/definition.md",
+      "roles/automation_engineer/definition.md",
+      "roles/ai_engineer/definition.md",
+      "roles/business_analyst/definition.md",
+      "roles/cyber_security/senior_cyber_security.md",
+      "roles/code_reviewer/definition.md",
+      "roles/database_engineer/definition.md",
+      "roles/data_engineer/definition.md",
+      "roles/data_scientist/definition.md",
+      "roles/frontend_developer/definition.md",
+      "roles/devops/definition.md",
+      "roles/fullstack_developer/definition.md",
+      "roles/qa_engineer/definition.md",
+      "roles/product_owner/definition.md",
+      "roles/scrum_master/definition.md",
+      "roles/software_architect/definition.md",
+      "roles/ui_ux/definition.md",
+      "roles/ux_researcher/definition.md",
+      "roles/technical_writer/definition.md"
+    ],
+    "rule": [
+      "rules/audit_before_closing.md",
+      "rules/deterministic_first.md",
+      "rules/no_hallucination.md",
+      "rules/document_after_change.md",
+      "rules/no_secrets_in_code.md",
+      "rules/no_unauthorized_scope_change.md",
+      "rules/respect_contracts.md"
+    ],
+    "security": [
+      "security/defense_in_depth.md",
+      "security/zero_trust_boundary.md"
+    ],
+    "qa": [
+      "qa/accessibility_checklist.md",
+      "qa/performance_checklist.md",
+      "qa/security_review_checklist.md",
+      "qa/regression_checklist.md"
+    ],
+    "design": [
+      "design/modal_dialog.md",
+      "design/modern_filters.md",
+      "design/modern_selectors.md",
+      "design/contextual_menu.md",
+      "design/skeleton_loading.md",
+      "design/search_bar.md"
+    ],
+    "mcp": [
+      "mcp/github.md",
+      "mcp/fetch.md",
+      "mcp/postgres.md",
+      "mcp/playwright.md"
+    ],
+    "skill": [
+      "skills/agile/backlog_management.md",
+      "skills/agile/definition_of_done.md",
+      "skills/agile/dependency_management.md",
+      "skills/agile/progress_tracking.md",
+      "skills/agile/sprint_planning.md",
+      "skills/ai/agent_design.md",
+      "skills/ai/agent_protocol.md",
+      "skills/architecture/clean_architecture.md"
+    ]
+  }
+}
