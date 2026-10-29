@@ -146,3 +146,15 @@ Verificar pantallas, formularios y flujos de extremo a extremo, o reproducir un 
 - La configuración y las credenciales del servidor las gestiona el usuario en su entorno; no se guardan en Mnemosine ni en el repositorio.
 
 Obsoleto: usar content en su lugar.
+
+
+# Peitho deployment-specific technology decisions
+
+- **Application and analytics:** Angular + TypeScript frontend; modular Python/FastAPI backend with asynchronous workers; PostgreSQL + pgvector.
+- **Inventary:** dedicated logical replication into Peitho PostgreSQL as the main bulk-data path, plus an authenticated internal read-only API for point verification. No writes to Inventary or heavy analytics against its transactional database.
+- **Local authentication:** Argon2id, TOTP or passkeys/WebAuthn, TLS, secure sessions, recovery and audit. No external identity federation in the initial release; OIDC/SAML remain future extensions.
+- **Language inference:** self-hosted vLLM with an OpenAI-compatible protocol. Do not configure OpenAI API, Azure OpenAI, Anthropic, Google Vertex AI or paid inference endpoints initially.
+- **Embeddings:** separate Python service using Sentence Transformers; local vectors in pgvector. LLM and embedding revisions are independently versioned. Ollama is reserved for local development.
+- **Validation gate:** select exact model IDs/revisions only after Spanish/Ecuadorian-business benchmarks, license review, load/memory testing and retrieval-quality evaluation.
+
+See the [accepted ADRs](architecture/decisions/) and JSON contracts under contracts/config/ and contracts/schemas/.

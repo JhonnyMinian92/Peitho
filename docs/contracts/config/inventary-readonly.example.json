@@ -1,0 +1,71 @@
+{
+  "schema_version": "1.0.0",
+  "environment": "example-not-production",
+  "source_system": "inventary",
+  "integration_mode": "logical_replication",
+  "target": {
+    "kind": "dedicated_postgresql_database",
+    "connection_env": "PEITHO_DATABASE_URL"
+  },
+  "publication": {
+    "name": "SET_WITH_INVENTARY_OWNER",
+    "approved_tables": [],
+    "schema_version": "SET_AFTER_CONTRACT_REVIEW"
+  },
+  "initial_load": {
+    "required": true,
+    "procedure_ref": "docs/architecture/decisions/ADR-0001-inventary-logical-replication.md"
+  },
+  "schema_migration": {
+    "ddl_replicated_automatically": false,
+    "coordination_required": true,
+    "compatibility_check_required": true
+  },
+  "read_only_api": {
+    "enabled": true,
+    "base_url_env": "INVENTARY_READONLY_API_BASE_URL",
+    "credential_env": "INVENTARY_READONLY_API_CREDENTIAL",
+    "allowed_checks": [
+      "availability",
+      "current_price_if_authorized"
+    ],
+    "validate_before_confirming_stock_sensitive_proposals": true
+  },
+  "freshness": {
+    "warning_lag_seconds": null,
+    "max_allowed_lag_seconds": null,
+    "thresholds_must_be_set_before_production": true,
+    "require_reconciliation_before_stock_sensitive_decisions": true
+  },
+  "required_dataset_metadata": [
+    "source_updated_at",
+    "received_at",
+    "applied_at",
+    "watermark",
+    "lag_seconds",
+    "schema_version",
+    "snapshot_id",
+    "reconciliation_status"
+  ],
+  "monitoring": [
+    "replication_send_and_apply_positions",
+    "replication_lag",
+    "subscription_and_apply_errors",
+    "replication_slot_progress",
+    "retained_wal_growth",
+    "disk_capacity",
+    "last_snapshot_age",
+    "reconciliation_results",
+    "recovery_test_status"
+  ],
+  "permissions": {
+    "write_to_inventary": false,
+    "arbitrary_sql_api": false,
+    "minimum_privileges": true
+  },
+  "decision_behavior": {
+    "stale_or_unreconciled_data": "block_or_mark_stock_sensitive_proposal_unconfirmed",
+    "api_verification_failure": "never_claim_current_availability"
+  },
+  "secrets_policy": "Store values in the deployment secret manager/environment, never in this file."
+}

@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.0.0",
+  "environment": "example-not-production",
+  "policy": {
+    "allow_external_inference": false,
+    "allow_public_inference_endpoints": false,
+    "redact_sensitive_inputs": true,
+    "require_tenant_and_permission_filters": true,
+    "validate_structured_outputs": true,
+    "record_model_and_prompt_template_versions": true
+  },
+  "llm": {
+    "provider": "vllm",
+    "api_protocol": "openai-compatible",
+    "base_url_env": "PEITHO_VLLM_BASE_URL",
+    "model_id": "SELECT_AFTER_SPANISH_BENCHMARK",
+    "revision": "PIN_IMMUTABLE_MODEL_REVISION",
+    "request_timeout_seconds": 60,
+    "max_concurrency_env": "PEITHO_LLM_MAX_CONCURRENCY"
+  },
+  "embeddings": {
+    "provider": "sentence-transformers",
+    "runtime_language": "python",
+    "service_url_env": "PEITHO_EMBEDDINGS_BASE_URL",
+    "model_id": "SELECT_AFTER_RETRIEVAL_BENCHMARK",
+    "revision": "PIN_IMMUTABLE_EMBEDDING_REVISION",
+    "dimensions": null,
+    "dimensions_must_match_model_output": true,
+    "vector_store": "postgresql+pgvector",
+    "reindex_strategy": "versioned_reindex_before_cutover"
+  },
+  "development": {
+    "ollama_allowed": true,
+    "production_runtime": "vllm",
+    "ollama_allowed_in_production": false
+  },
+  "selection_gate": [
+    "Spanish-language evaluation",
+    "Ecuadorian commercial vocabulary evaluation",
+    "retrieval quality and latency benchmarks",
+    "memory/throughput/load testing",
+    "license review"
+  ],
+  "cost_note": "No per-token inference subscription is configured; hardware, energy, storage, backup and maintenance costs remain."
+}

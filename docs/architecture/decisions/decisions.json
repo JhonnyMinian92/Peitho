@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Peitho accepted architecture decisions",
+  "schema_version": "1.0.0",
+  "project": "Peitho",
+  "decision_date": "2026-10-29",
+  "status": "accepted",
+  "note": "Declares initial architecture choices; does not prove services are deployed.",
+  "decisions": [
+    {
+      "id": "ADR-0001",
+      "status": "accepted",
+      "title": "Dedicated PostgreSQL logical replication from Inventary",
+      "primary_integration": "postgresql_logical_replication_to_dedicated_peitho_postgresql",
+      "point_validation": "authenticated_internal_read_only_api",
+      "direct_oltp_analytics": false,
+      "writes_to_inventary": false,
+      "required_controls": [
+        "dataset_freshness_timestamps",
+        "watermark_and_lag_metrics",
+        "schema_migration_coordination",
+        "reconciliation",
+        "replication_slot_wal_disk_monitoring",
+        "recovery_tests"
+      ],
+      "path": "docs/architecture/decisions/ADR-0001-inventary-logical-replication.md"
+    },
+    {
+      "id": "ADR-0002",
+      "status": "accepted",
+      "title": "Local authentication first",
+      "initial_authentication": "local",
+      "password_hash": "Argon2id",
+      "mfa": [
+        "TOTP",
+        "WebAuthn/passkeys"
+      ],
+      "tls_required": true,
+      "external_identity_federation_initial": false,
+      "future_federation": [
+        "OIDC",
+        "SAML"
+      ],
+      "path": "docs/architecture/decisions/ADR-0002-autenticacion-local.md"
+    },
+    {
+      "id": "ADR-0003",
+      "status": "accepted",
+      "title": "Self-hosted LLM and embeddings gateway",
+      "llm_runtime": "vLLM",
+      "llm_protocol": "OpenAI-compatible API protocol",
+      "embedding_runtime": "Python + Sentence Transformers",
+      "vector_store": "PostgreSQL + pgvector",
+      "ollama_scope": "local_development_only",
+      "paid_external_inference_allowed_initially": false,
+      "exact_model_selection": "after Spanish/Ecuadorian-business benchmark and license review",
+      "independent_llm_and_embedding_versions": true,
+      "path": "docs/architecture/decisions/ADR-0003-pasarela-ia-autogestionada.md"
+    }
+  ]
+}

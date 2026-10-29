@@ -58,3 +58,30 @@ Requisitos que esta aplicación web cumple para considerarse lista para producci
 ## Legal
 
 - **WEB-LEG-01 — Privacidad y consentimiento de cookies.** Si recoge datos personales o usa cookies no esenciales: política de privacidad accesible y consentimiento.
+
+
+## Peitho-specific production gates: Inventary, authentication and AI
+
+Do not declare production readiness until applicable gates pass and evidence is recorded.
+
+### Inventary integration
+- [ ] A dedicated logical-replication publication/subscription uses an approved table/column allowlist; bootstrap/backfill are documented.
+- [ ] Source/subscriber schema migrations are coordinated; tests account for logical replication not copying DDL automatically.
+- [ ] Each dataset exposes source update time, receive/apply time, watermark/LSN, lag, schema version, snapshot ID and reconciliation result. Unknown freshness is never shown as healthy.
+- [ ] Monitoring covers send/apply positions, replication lag/errors, slot advancement, retained/growing WAL, disk, subscription failures and recovery readiness.
+- [ ] Reconciliation/recovery tests cover duplicates, missing ranges, schema incompatibility, stalled consumers, WAL pressure and restore/resynchronization.
+- [ ] An authenticated, scoped, rate-limited and audited read-only Inventary API verifies current availability/price when the proposal depends on that instant.
+- [ ] Automated tests prove Peitho cannot write or execute DDL against Inventary and no agent/LLM can run arbitrary SQL.
+- [ ] If freshness or reconciliation is outside configured limits, UI/API mark data stale/degraded and block confirmation of stock-sensitive proposals.
+
+### Local authentication
+- [ ] Initial login works without a third-party identity provider. Passwords use Argon2id; TOTP/passkeys, administrator MFA, secure sessions, recovery, revocation and audit are tested.
+- [ ] TLS, cookie flags, CSRF/CORS controls, CSP, rate limits and tenant isolation are tested. No passwords, tokens, MFA secrets or sensitive ciphertext enter logs.
+- [ ] OIDC/SAML are not required for the first deployment and remain disabled unless a future accepted ADR enables them.
+
+### Self-hosted AI and vector search
+- [ ] Production LLM inference uses self-hosted vLLM; embeddings use a separate Python/Sentence Transformers service; Ollama is restricted to local dev/test.
+- [ ] No paid external inference endpoint or provider credential is required by the default configuration. Network policy prevents unintended egress of business prompts/data.
+- [ ] Model licenses, Spanish/Ecuadorian evaluation, memory/throughput and latency benchmarks are recorded before model revisions are pinned.
+- [ ] Embedding model ID, immutable revision, dimensions and index version are recorded; model-change tests verify re-embedding and safe cutover without mixing vector spaces.
+- [ ] Hardware, power, disk, backup and maintenance capacity are documented; self-hosting avoids inference subscriptions but is not cost-free to operate.

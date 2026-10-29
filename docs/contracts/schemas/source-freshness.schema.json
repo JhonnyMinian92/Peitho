@@ -1,0 +1,142 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Peitho source freshness and replication status",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_id",
+    "dataset_id",
+    "mode",
+    "status",
+    "source_updated_at",
+    "received_at",
+    "applied_at",
+    "watermark",
+    "lag_seconds",
+    "schema_version",
+    "snapshot_id",
+    "reconciliation_status",
+    "stock_sensitive_decisions_allowed"
+  ],
+  "properties": {
+    "source_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "dataset_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "mode": {
+      "const": "logical_replication"
+    },
+    "status": {
+      "enum": [
+        "HEALTHY",
+        "STALE",
+        "DEGRADED",
+        "FAILED",
+        "UNKNOWN"
+      ]
+    },
+    "source_updated_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "received_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "applied_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "watermark": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "LSN, source cursor or another versioned high-water mark."
+    },
+    "lag_seconds": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0
+    },
+    "schema_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "snapshot_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "last_reconciled_at": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "reconciliation_status": {
+      "enum": [
+        "PASSED",
+        "FAILED",
+        "PENDING",
+        "UNKNOWN"
+      ]
+    },
+    "reconciliation_details": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": true
+    },
+    "stock_sensitive_decisions_allowed": {
+      "type": "boolean"
+    },
+    "reason_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "enum": [
+              "STALE",
+              "DEGRADED",
+              "FAILED",
+              "UNKNOWN"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "stock_sensitive_decisions_allowed": {
+            "const": false
+          }
+        }
+      }
+    }
+  ]
+}

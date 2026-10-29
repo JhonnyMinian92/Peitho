@@ -1,0 +1,218 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Peitho initial local authentication policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "mode",
+    "external_identity_provider",
+    "future_federation",
+    "passwords",
+    "mfa",
+    "transport",
+    "session",
+    "application_level_credential_encryption",
+    "audit",
+    "tenant_authorization"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "environment": {
+      "type": "string"
+    },
+    "mode": {
+      "const": "local"
+    },
+    "external_identity_provider": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled",
+        "initial_providers"
+      ],
+      "properties": {
+        "enabled": {
+          "const": false
+        },
+        "initial_providers": {
+          "type": "array",
+          "maxItems": 0
+        }
+      }
+    },
+    "future_federation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "oidc",
+        "saml"
+      ],
+      "properties": {
+        "oidc": {
+          "const": "future-only"
+        },
+        "saml": {
+          "const": "future-only"
+        }
+      }
+    },
+    "passwords": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hash_algorithm",
+        "reversible_storage"
+      ],
+      "properties": {
+        "hash_algorithm": {
+          "const": "Argon2id"
+        },
+        "reversible_storage": {
+          "const": false
+        }
+      }
+    },
+    "mfa": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "supported",
+        "required_for_administrators",
+        "required_for_sensitive_actions",
+        "recovery_codes_protected"
+      ],
+      "properties": {
+        "supported": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "TOTP",
+              "WebAuthn/passkeys"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "required_for_administrators": {
+          "const": true
+        },
+        "required_for_sensitive_actions": {
+          "type": "boolean"
+        },
+        "recovery_codes_protected": {
+          "type": "boolean"
+        }
+      }
+    },
+    "transport": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tls_required",
+        "secure_cookie",
+        "http_only_cookie",
+        "same_site",
+        "csrf_protection"
+      ],
+      "properties": {
+        "tls_required": {
+          "const": true
+        },
+        "secure_cookie": {
+          "const": true
+        },
+        "http_only_cookie": {
+          "const": true
+        },
+        "same_site": {
+          "enum": [
+            "Strict",
+            "Lax"
+          ]
+        },
+        "csrf_protection": {
+          "const": true
+        }
+      }
+    },
+    "session": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "limited_lifetime",
+        "server_side_revocation",
+        "refresh_tokens_in_local_storage"
+      ],
+      "properties": {
+        "limited_lifetime": {
+          "const": true
+        },
+        "server_side_revocation": {
+          "const": true
+        },
+        "refresh_tokens_in_local_storage": {
+          "const": false
+        }
+      }
+    },
+    "application_level_credential_encryption": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enabled_when_applicable",
+        "single_use_challenge_required",
+        "supplements_tls"
+      ],
+      "properties": {
+        "enabled_when_applicable": {
+          "type": "boolean"
+        },
+        "single_use_challenge_required": {
+          "type": "boolean"
+        },
+        "supplements_tls": {
+          "const": true
+        }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "record_login_success_and_failure",
+        "record_role_mfa_recovery_and_session_changes",
+        "never_log_password_tokens_mfa_secrets_or_sensitive_ciphertext"
+      ],
+      "properties": {
+        "record_login_success_and_failure": {
+          "const": true
+        },
+        "record_role_mfa_recovery_and_session_changes": {
+          "const": true
+        },
+        "never_log_password_tokens_mfa_secrets_or_sensitive_ciphertext": {
+          "const": true
+        }
+      }
+    },
+    "tenant_authorization": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "backend_enforced",
+        "per_request_permission_check"
+      ],
+      "properties": {
+        "backend_enforced": {
+          "const": true
+        },
+        "per_request_permission_check": {
+          "const": true
+        }
+      }
+    }
+  }
+}

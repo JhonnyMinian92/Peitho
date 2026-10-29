@@ -1,11 +1,11 @@
 # Project Context
 
-Description: **Peitho** es una plataforma prescriptiva de optimización comercial y marketing automatizado impulsada por inteligencia artificial que unifica las capacidades de un ERP y un CRM para transformar los datos operativos en acciones estratégicas directas. Su alcance abarca desde la monitorización integral del inventario, compras y logística a través de toda la red de bodegas y locales, hasta el análisis avanzado de probabilidades mediante *machine learning* para dictar la decisión comercial más rentable en tiempo real, culminando en la generación y ejecución autónoma de campañas publicitarias omnicanal —vía redes sociales, WhatsApp, SMS, llamadas y correo electrónico— diseñadas específicamente para mover mercancía, resolver cuellos de botella y maximizar los ingresos sin requerir intervención humana constante.
+Description: Peitho es una plataforma de inteligencia comercial y CRM de preventa, venta y postventa. Analiza datos operativos de Inventary mediante integración exclusivamente de lectura, mantiene su propio CRM y proyecciones analíticas en PostgreSQL + pgvector, ejecuta modelos estadísticos y predictivos y prepara propuestas auditables para revisión humana. No sustituye a Inventary como autoridad transaccional, no es un segundo ERP y no envía ni publica comunicaciones comerciales.
 Development type: both
 Application type: web
 Environments in scope: development, local, production
 Database: new (postgresql); the agent designs and creates it
-Database notes: En el directorio raiz debe crear el directorio del frontend app-peitho-ecuapp y del backend que es microservices-peitho-ecuapp. El frontend no debe usar alert, siempre usar skelleton, modales, stepper, selectores modernos, input con validaciones, efectos, transiciones y experiencia de usuario facil e intuitiva. El backend debe tener estandar de json request y estadar de salida de json response. El backend debe tener cifrado de aplicacion, trasabilidad, escalamiento, auditoria, sonda, webhook, sse, machine learning, algoritmos de prediccion, algoritmos de clasificacion no supervisado, algoritmos de mejor ruta, algoritmos estadistico de probabilidad de abandono, entre otros. El backend debe ser el cerebro que constantemente piensa con los datos que siguen llegando de las ventas y compras. Ademas de conocer totalmente el estado actual del inventario. jamas hagas codigo spaguetti o monolitos con funciones gigantes de codigo fuente.
+Database notes: El frontend objetivo es Angular + TypeScript y el backend Python/FastAPI modular, con workers de analítica y servicios de IA separados por responsabilidad. Peitho utiliza PostgreSQL + pgvector y no escribe sobre Inventary. La integración principal en producción es replicación lógica dedicada desde Inventary hacia PostgreSQL de Peitho, complementada por una API interna de solo lectura para verificaciones puntuales. El inicio de sesión inicial es local y seguro, con Argon2id, MFA mediante TOTP o passkeys, TLS, sesiones seguras y auditoría; OIDC/SAML quedan como extensión futura. La inferencia se autogestiona con vLLM y un microservicio Python de Sentence Transformers para embeddings; Ollama se reserva para desarrollo local. La selección final de modelos depende de benchmarks en español y de comprobar licencias e infraestructura. La interfaz debe priorizar accesibilidad, validación, estados de carga/vacío/error y formularios extensos por pasos, sin alertas nativas.
 
 # PEITHO 3.0 — Especificación enterprise de inteligencia comercial, agentes y plataforma B2B
 
@@ -39,7 +39,7 @@ Esta revisión convierte los siguientes elementos en requisitos de arquitectura 
 2. **Backend principal Python** con FastAPI/Pydantic y módulos de dominio estrictos. Los procesos de ML no se ejecutan en el hilo de la API ni pueden modificar las fuentes transaccionales.
 3. **Multiempresa real (multi-tenant)** desde el modelo de datos, el contexto de seguridad, el almacenamiento, las colas, los modelos, los vectores, las exportaciones y los límites de uso.
 4. **PostgreSQL como base operacional de Peitho, ampliado con `pgvector`**. Los vectores son una capacidad de recuperación semántica/RAG, no sustituyen las tablas relacionales ni los algoritmos numéricos de pronóstico.
-5. **Login corporativo seguro**: TLS obligatorio, SSO OIDC/SAML cuando corresponda, passkeys/WebAuthn o MFA, Argon2id para contraseñas y cifrado adicional de aplicación mediante reto de un solo uso. El cifrado de aplicación no sustituye TLS ni protege frente a una SPA comprometida por XSS.
+5. **Autenticación inicial local y segura**: TLS obligatorio, contraseñas con Argon2id, MFA mediante TOTP o passkeys/WebAuthn, sesiones seguras, recuperación controlada y auditoría. El cifrado de aplicación para el intercambio de credenciales, cuando corresponda, es adicional a TLS; OIDC/SAML no se habilitan en el despliegue inicial.
 6. **APIs de agente IA para control y consulta de resultados** con esquemas cerrados, permisos, límites, validación, trazabilidad y respuestas que incluyan evidencia, versión y fecha de corte. Los agentes no obtienen acceso SQL libre.
 7. **Servidor MCP de Peitho** para exponer herramientas/recursos controlados a otros asistentes y backends, con autorización OAuth, scopes por tenant y herramientas de solo lectura por defecto.
 8. **APIs B2B-first** para clientes empresariales que quieran utilizar solo el backend: OAuth 2.1 client credentials o autenticación fuerte equivalente, scopes, cuotas, versionado, idempotencia, auditoría, portal para desarrolladores y sandbox.
@@ -123,19 +123,29 @@ Si en el futuro Inventary no tiene un dominio empresarial necesario —por ejemp
 
 ### 2.3. Base de datos de Inventary solo en lectura
 
-El acceso de Peitho a Inventary se debe hacer sobre una **réplica/vista de lectura o API con permiso de lectura**, nunca mediante un usuario de aplicación con permisos de escritura sobre la base transaccional. Una replicación lógica de PostgreSQL puede enviar cambios de un subconjunto de tablas a un suscriptor y sirve, entre otros usos, para consolidar datos analíticos; hay que administrar expresamente el retardo, los conflictos y la carga [PostgreSQL Logical Replication](https://www.postgresql.org/docs/current/logical-replication.html).
+**Decisión aceptada para producción:** utilizar una **réplica lógica dedicada de Inventary hacia PostgreSQL de Peitho** como mecanismo principal de integración de datos. Complementarla con una **API interna de Inventary de solo lectura** para verificaciones puntuales —especialmente disponibilidad y precio vigente—. No ejecutar consultas analíticas intensivas sobre la base transaccional de Inventary ni usar una read-replica transaccional como almacén analítico principal.
 
-El patrón preferido es una combinación:
+La réplica es una proyección de integración, no un almacén analítico perfecto ni una nueva fuente de verdad. La replicación lógica de PostgreSQL replica cambios de datos de las tablas publicadas; **no replica automáticamente definiciones del esquema ni cambios DDL**. Las migraciones de origen y suscriptor deben coordinarse, probarse y versionarse. Referencia: [PostgreSQL Logical Replication](https://www.postgresql.org/docs/current/logical-replication.html).
 
-1. **Lectura rápida de hechos y estado:** Peitho consulta las vistas aprobadas o una réplica de lectura de Inventary para inicializar y reconciliar el estado de productos, stock, compras y ventas.
-2. **Cambios incrementales:** consumir Outbox/eventos con identificadores estables, o CDC/replicación o sondeo incremental con checkpoints si todavía no se dispone de eventos semánticos fiables. El patrón Outbox evita la inconsistencia entre guardar una operación en la base y publicar su evento; la documentación de Debezium describe este uso [Debezium Outbox Event Router](https://debezium.io/documentation/reference/stable/transformations/outbox-event-router.html).
-3. **Reconciliación periódica:** comparar totales y registros fuente contra el modelo de lectura de Peitho. Un evento perdido no debe convertirse en un dato incorrecto que permanezca oculto.
-4. **Bloqueo por frescura:** si el estado de Inventary está vencido o no ha sido reconciliado, una propuesta dependiente de stock/precio debe advertirlo o quedar bloqueada.
+#### Flujo y frescura de datos
 
-El lector debe poseer `SELECT` solamente sobre vistas/tablas explícitamente autorizadas; no debe tener `INSERT`, `UPDATE`, `DELETE`, `TRUNCATE`, privilegio de DDL, escritura en secuencias, creación de funciones ni permisos de administración. Si el motor lo permite, ejecutar la conexión en transacciones `READ ONLY`, aislarla por red y vigilar que ningún usuario de aplicación pueda elevar privilegios. Una vista de lectura debe exponer únicamente los campos necesarios para Peitho.
+1. Acordar con Inventary la publicación lógica, las tablas/columnas necesarias, claves estables y versión de esquema. No asumir que tablas, eventos, publicación o API ya existen.
+2. Inicializar la suscripción y carga base en PostgreSQL dedicado de Peitho. Mantener credenciales y redes separadas y limitar el alcance a datos aprobados.
+3. Usar los cambios replicados para alimentar eventos canónicos y proyecciones versionadas de productos, stock, costes, compras, recepciones, ventas, cancelaciones, devoluciones y movimientos existentes en la fuente.
+4. Registrar por conjunto de datos la hora de actualización observada en origen, recepción/aplicación, watermark o posición de replicación, retraso, versión de esquema, última conciliación e identificador de snapshot/lote.
+5. Conciliar recuentos, cantidades, importes, rangos temporales y saldos por producto/almacén. Si hay discrepancia, falta de continuidad o esquema incompatible, marcar la proyección como degradada/obsoleta.
+6. Antes de etiquetar como confirmada una propuesta dependiente de disponibilidad instantánea, consultar el snapshot de lectura más reciente y, cuando corresponda, verificar mediante la API interna de solo lectura. Si no puede verificarse, queda **no confirmada**; nunca inventar disponibilidad.
+7. Inventary conserva la autoridad de stock y ventas. Peitho nunca registra ventas ni modifica existencias, compras, precios, productos, reservas o movimientos en Inventary.
 
-**Importante:** la propuesta no da por hecho que Inventary ya publique todos los eventos necesarios para analítica. El repositorio documenta Outbox/Kafka opcional y auditoría, pero también describe un consumidor de Kafka destinado a invalidar caché, no una plataforma analítica con proyecciones completas. Deben inventariarse los contratos reales del commit desplegado; el catálogo de eventos de esta propuesta es futuro y requiere implementación/versionado donde no exista.
+#### Protección operativa obligatoria
 
+- La cuenta/rol de integración tendrá permisos mínimos y solo acceso a objetos autorizados; no tendrá privilegios de escritura ni DDL en el origen.
+- Supervisar posiciones de replicación/LSN, lag de envío y aplicación, estado de suscripciones, errores del apply worker, slots de replicación, crecimiento/retención del WAL, disco, antigüedad de snapshots, conciliación y capacidad de recuperación. Un consumidor detenido puede retener WAL y agotar disco.
+- Probar recuperación de suscripción, resincronización, restauración de backups y comportamiento ante DDL incompatible.
+- La API interna usa endpoints tipados de solo lectura con autenticación de servicio, permisos mínimos, límites y auditoría. No ofrece SQL libre ni acceso SQL directo al LLM.
+- Los umbrales de frescura y tolerancia de conciliación se configuran por ambiente antes de producción. Si faltan umbrales o métricas, el estado no se considera saludable.
+
+**Condición de despliegue:** inventariar los contratos reales del commit desplegado de Inventary. Outbox/Kafka o una API concreta solo se incorporan si su existencia, cobertura, semántica e idempotencia se verifican.
 ---
 
 ## 3. Investigación de mercado y evidencia del mundo real
@@ -717,16 +727,16 @@ La recomendación de esta versión es **Angular para el frontend y Python para e
 | CRM y workflow | Módulos Python con límites de dominio: tenant, identity, CRM, proposals, review, governance | Lead, contacto, oportunidad, actividad, tarea, consentimiento, propuesta, revisión, decisión y resultado. Los eventos de venta real llegan desde Inventary o un sistema fuente autorizado. |
 | Ingesta y reconciliación | Python workers; patrones Outbox/CDC/polling incremental; broker duradero cuando se defina el SLA | Importación idempotente, watermark, replay, dead-letter queue, reconciliación de totales, mapeo de esquemas y detección de retrasos. No escribe sobre la fuente externa. |
 | Analítica/ML | Python: pandas/Polars según volumen, scikit-learn y librerías especializadas de forecasting; XGBoost/LightGBM opcionales con evaluación | Forecast, scoring, uplift, propensión, anomalías, calibración, backtesting y model registry. Selección por comparación en datos de validación, no por moda de algoritmo. |
-| Orquestación AI | `ai-orchestrator` + gateway de modelos intercambiables y herramientas registradas | RAG, resumen, explicación y generación de borradores. Debe aplicar políticas, presupuesto de tokens, redacción de PII, timeout y validación de salida. Modelo externo o local configurable por tenant y clasificación de datos. |
+| Orquestación AI | Gateway local autogestionado; vLLM como servidor de LLM compatible con API tipo OpenAI y microservicio Python independiente de Sentence Transformers para embeddings | RAG, síntesis, explicación y borradores sometidos a políticas y validación. No usar OpenAI API, Azure OpenAI, Anthropic, Google Vertex AI ni inferencia de pago en la configuración inicial. Ollama solo para desarrollo local. |
 | Base operacional de Peitho | PostgreSQL con `pgvector`, constraints, índices, RLS, backup/PITR y migraciones Alembic/SQL revisadas | CRM propio, eventos canónicos, estado de fuente, propuestas, auditoría, versiones de decisiones y embeddings. `pgvector` amplía PostgreSQL; no sustituye el modelo relacional. |
-| Datos de Inventary | Replica lógica o base de lectura dedicada; en su defecto API/consultas de solo lectura | Snapshot operativo, ventas, compras, recepciones, movimientos, devoluciones, producto, coste/stock si el permiso lo autoriza. La cuenta no tiene permisos de escritura; no se permite fallback a la base primaria para escribir. |
+| Datos de Inventary | Replicación lógica dedicada hacia PostgreSQL de Peitho; API interna de solo lectura para verificaciones puntuales | La réplica alimenta proyecciones analíticas; las consultas voluminosas no se ejecutan sobre la base transaccional. Registrar watermark/frescura y coordinar cambios de esquema porque DDL no se replica automáticamente. Sin escritura sobre Inventary. |
 | Estado analítico | PostgreSQL propio/proyecciones materializadas primero; almacén columnar (p. ej., ClickHouse) solo si volumen y consultas lo justifican | Agregaciones de alta cardinalidad y eventos de producto/web. No sustituye la fuente operacional ni la réplica de Inventary. |
 | Archivos | Almacenamiento de objetos compatible S3, con versionado y cifrado | Briefs, imágenes de referencia, documentos aportados y exportaciones con autorización. Los archivos no viven en el repositorio de código ni se entregan públicamente por URL permanente. |
-| Vector/semántica | `pgvector` HNSW/IVFFlat según benchmarks + búsqueda textual PostgreSQL + filtros estructurados | Recuperación de casos, catálogo de afirmaciones, documentos, notas y propuestas previas. Búsqueda híbrida, filtros tenant/permiso/fecha/origen, reindexación versionada y eliminación de embeddings cuando corresponda. |
+| Vector/semántica | PostgreSQL + pgvector; embeddings generados localmente por microservicio Python con Sentence Transformers | Búsqueda híbrida con filtros tenant/permisos. Versionar modelo, revisión, dimensiones y checksum; reindexar y validar antes de cambiar de encoder para no mezclar vectores incompatibles. |
 | Bus de eventos | Contrato versionado, outbox/inbox y broker durable (Kafka cuando volumen/retención/replay lo requiera) | Eventos sin pérdida ni duplicación de efectos. Cada consumidor es idempotente, con retry/backoff y DLQ. No crear el broker por decoración; diseñar de modo compatible desde el inicio. |
 | MCP | Servidor MCP HTTP protegido, con tools/resources explícitos y scopes; servidor separado del API UI si la superficie de ataque lo exige | Conectar agentes y backends. Lecturas autorizadas y creación de borradores; ninguna herramienta de envío, publicación ni mutación de Inventary. OAuth y validación de audience/tenant. |
 | API B2B | Mismo dominio de backend expuesto mediante contratos estables y políticas diferenciadas | Empresas integran Peitho sin Angular. Versionado, OAuth client credentials, scopes, cuotas, sandbox, idempotency keys, auditoría y webhooks salientes solo si son activados como integración aprobada; no enviar campañas. |
-| Identidad | OIDC/SAML para SSO corporativo; WebAuthn/passkeys y MFA; cuenta local de emergencia limitada | Federar identidad, mapear grupos a roles por tenant, lifecycle de usuario, session management, step-up auth y revocación. |
+| Identidad | Autenticación local segura inicial: Argon2id, MFA TOTP o passkeys/WebAuthn, TLS, sesiones seguras y recuperación auditada | Sin Microsoft Entra, Google Workspace, Keycloak ni federación externa en el lanzamiento inicial. OIDC/SAML quedan como extensión futura si una necesidad de negocio lo justifica. |
 | Observabilidad | OpenTelemetry para trazas/métricas/logs; almacenamiento autogestionado o vendor-neutral | Correlacionar UI/API/worker/LLM/MCP/tenant; medir lag de inventario, fallos de ingesta, decisiones, tokens/coste, latencia y riesgos. Nunca escribir secretos o payloads privados indiscriminadamente. |
 | Despliegue | Contenedores, Kubernetes si el tamaño/operación lo justifica o infraestructura de contenedores gestionada; IaC, CI/CD y GitOps según el entorno | Despliegues reproducibles, secretos de KMS/Vault, entornos aislados, migraciones compatibles, rollback, autoescalado y recuperación ensayada. |
 
@@ -818,6 +828,9 @@ Referencia: [OWASP Multi-Tenant Security Cheat Sheet](https://cheatsheetseries.o
 
 ### 11.7. Login seguro con cifrado a nivel de aplicación
 
+**Configuración inicial elegida:** autenticación local segura. No se depende de Microsoft Entra, Google Workspace, Keycloak ni otro proveedor de identidad externo en el primer despliegue. La arquitectura puede incorporar OIDC/SAML después, pero no se simulará una federación no configurada.
+
+
 “Cifrado de aplicación” se implementa como una capa adicional al TLS y no como sustituto de las prácticas modernas de autenticación.
 
 **Flujo recomendado para login local**
@@ -827,12 +840,15 @@ Referencia: [OWASP Multi-Tenant Security Cheat Sheet](https://cheatsheetseries.o
 3. La API valida origen, expiración, nonce, uso único, algoritmo, tamaño, rate-limit y estado de cuenta antes de aceptar el intento. La clave privada queda fuera de la base de datos, bajo KMS/secret manager y rotación documentada.
 4. La contraseña se verifica usando hash lento/salado como Argon2id; nunca se almacena reversible ni se registra en auditoría, error, métrica o trace.
 5. El token de sesión se entrega en cookie `HttpOnly`, `Secure`, `SameSite` cuando la topología permite BFF; no guardar refresh tokens en `localStorage`. CSRF se protege de acuerdo con el modelo de cookie y los orígenes permitidos.
-6. Se ofrece SSO OIDC/SAML, WebAuthn/passkeys y MFA; se requiere step-up para cambios de roles, exportación sensible, configuración de fuentes/modelos y uso de credenciales B2B.
+6. Se habilitan cuentas locales por empresa, RBAC y permisos por tenant, MFA mediante TOTP o passkeys/WebAuthn y autenticación reforzada para cambios críticos. OIDC/SAML quedan fuera del despliegue inicial y se incorporarán solo mediante decisión futura explícita.
 7. Se implementa recuperación de cuenta segura, revocación centralizada, límites progresivos, protección de credential stuffing, gestión de sesiones/dispositivos y avisos de acceso sospechoso dentro de Peitho (no envío automático de avisos al usuario si eso requiere un canal externo; se muestra/expone para integración aprobada).
 
 **Límite técnico importante:** cifrar las credenciales en JavaScript no impide que un XSS o una SPA comprometida lea lo escrito antes de cifrarlo. Se necesitan CSP, Trusted Types, dependencias controladas, revisión de supply chain, AOT, ninguna inserción insegura de HTML, protección CSRF, revisión de endpoints y pruebas de seguridad. Cifrado de aplicación no debe presentarse como reemplazo de TLS, passkeys/MFA o almacenamiento seguro de contraseñas. [OWASP Password Storage](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html) · [Angular security](https://angular.dev/best-practices/security).
 
 ### 11.8. PostgreSQL + pgvector: búsqueda semántica y memoria recuperable
+
+Los embeddings se generan en un microservicio Python autogestionado basado en Sentence Transformers. El modelo, revisión, idioma, dimensiones, checksum y fecha de generación quedan versionados. Un cambio de modelo o dimensión requiere un índice/espacio de versiones nuevo, reindexación controlada y validación antes del cambio de tráfico. vLLM sirve los modelos de lenguaje en infraestructura propia; Ollama queda reservado para desarrollo local.
+
 
 PostgreSQL es el motor de datos de Peitho y `pgvector` es una extensión para almacenar y consultar embeddings con SQL. **No se recomienda tratar el embedding como fuente de verdad, ni llamar “base vectorial” al sistema completo como si vectores sustituyeran las relaciones de negocio.** La información de producto, stock, ventas, permisos, precios, fechas y consentimiento sigue normalizada o agregada en tablas estructuradas; los vectores recuperan documentos/casos semánticamente relacionados.
 
@@ -1227,7 +1243,7 @@ Requisitos mínimos:
 - Cifrado en tránsito, cifrado en reposo, gestión de claves y rotación; opción de claves separadas por tenant para planes que la requieran. La separación física dedicada se ofrece solo si está implementada y probada.
 - Gestión central de secretos: ninguna clave de Inventary, proveedor LLM, MCP, SMTP u OAuth se almacena en repositorio o registros. Los administradores ven estado/últimos cuatro caracteres o huella, nunca el secreto completo después de su creación.
 - SBOM, escaneo de dependencias/containers, secret scanning, análisis estático, tests DAST y pruebas de penetración antes de producción y con periodicidad definida.
-- SSO y provisioning de usuario (SCIM como integración futura/enterprise cuando exista proveedor), baja/revocación efectiva, sesión de usuario y cliente técnico, `least privilege`, MFA/step-up y recuperación revisable.
+- Cuentas locales por tenant, revocación efectiva, sesiones de usuario y clientes técnicos, mínimo privilegio, MFA/step-up y recuperación revisable. OIDC/SAML y SCIM son extensiones futuras, no dependencias iniciales.
 - Playbooks de incidente, notificación contractual, borrado/retención, exportación de datos y evidencia de restore; pruebas de aislamiento tenant en cada PR que altere auth, repositories, cache o agentes.
 
 
@@ -1462,7 +1478,7 @@ Google Meridian y Meta Robyn pueden evaluarse para MMM open source, pero la empr
 |---|---|---|
 | Riesgo de comunicación | Motor de riesgo, coste y política; borradores de canal | Cada propuesta muestra riesgos, bloqueos, coste y fuentes/fecha; no hay dispatcher de comunicaciones ni credenciales de envío. |
 | Regla de 72 h WhatsApp | Motor configurable por fecha, país, origen, ventana, categoría y tarifa | Caso Click-to-WhatsApp elegible se identifica separado de un lead normal; la publicidad no se modela como gratis; tarifa indefinida o fuente discrepante se marca “no confirmada”. |
-| Login cifrado de aplicación | Reto de un solo uso + cifrado autenticado + TLS | Pruebas replay, expirar, rotar clave, algoritmo indebido, login no TLS y log redaction; login de usuario corporativo via SSO y MFA/passkeys. |
+| Login local con cifrado adicional de aplicación | Reto de un solo uso + cifrado autenticado cuando corresponda + TLS + Argon2id + MFA TOTP/passkeys | Pruebas de replay, expiración, rotación, login sin TLS, recuperación segura, aislamiento tenant y redacción de logs; no exigir SSO en el despliegue inicial. |
 | Multiempresa | tenant_id, membresías, RLS y context propagado | Suite automatizada de ataque cross-tenant en REST, búsqueda vectorial, cache, exports, workers, B2B, MCP y auditoría sin fugas. |
 | Roles frontend/backend | RBAC/ABAC y directivas Angular | Usuario sin permiso no puede ver el botón y, especialmente, el endpoint responde 403 sin side effects; tenant/objeto se valida en servidor. |
 | PostgreSQL vectorial | PostgreSQL + pgvector y búsqueda híbrida | Recall@k, latencia, filtrado tenant, versión de embeddings, reindexación y supresión de registros probados contra datos realistas. |

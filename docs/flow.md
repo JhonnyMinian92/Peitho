@@ -9,6 +9,8 @@
 
 > Los diagramas describen el comportamiento que debe implementarse, no afirman que ya exista en producción. Los nombres de servicios, eventos y tablas son contratos propuestos; deben consolidarse en ADRs y OpenAPI antes de codificar.
 
+**Decisiones iniciales vinculantes:** (1) réplica lógica dedicada de Inventary hacia PostgreSQL de Peitho, con API interna de solo lectura para verificaciones puntuales; (2) autenticación local segura con TOTP o passkeys, sin federación externa inicial; (3) gateway de IA autogestionado con vLLM y embeddings locales con Sentence Transformers. Los contratos de docs/architecture/decisions/ y docs/contracts/ describen la configuración objetivo, no un despliegue ya ejecutado.
+
 ---
 
 ## Índice
@@ -217,41 +219,48 @@ flowchart TD
 
 ## 4. Inventary en modo exclusivamente lectura
 
-```mermaid
+**Mecanismo principal:** replicación lógica dedicada desde Inventary hacia PostgreSQL de Peitho. **Complemento:** API interna de solo lectura para validar puntualmente disponibilidad/precio antes de etiquetar una propuesta como confirmada. No ejecutar analítica intensiva contra la base transaccional ni considerar una réplica de lectura transaccional como almacén analítico principal.
+
+~~~mermaid
 flowchart TD
-  I[Inventary: PostgreSQL operativo] --> METHOD{Método de integración acordado}
-  METHOD -- Preferido: réplica / CDC lógico --> REPL[(Réplica analítica dedicada read-only)]
-  METHOD -- Alternativa --> API[API de lectura versionada]
-  METHOD -- Alternativa controlada --> VIEW[Vistas de lectura / exportación programada]
-  REPL --> EXTRACT[Extractor por cursor o posición de log]
-  API --> EXTRACT
-  VIEW --> EXTRACT
-  EXTRACT --> CHECK[Comprobar continuidad, lag, schema y checksum]
-  CHECK --> GOOD{¿Datos consistentes y suficientemente frescos?}
-  GOOD -- No --> STALE[Marcar proyección como STALE; bloquear decisiones sensibles al stock]
-  GOOD -- Sí --> MAP[Mapear productos, almacenes, compras, recepciones, ventas, líneas, devoluciones y movimientos]
-  MAP --> CANON[Eventos canónicos o snapshots versionados]
-  CANON --> PEITHO[(Base analítica de Peitho)]
-  PEITHO --> VERIFY[Conciliación: conteos, cantidades, totales y ventanas temporales]
-  VERIFY --> PASS{¿Conciliación dentro de tolerancia?}
-  PASS -- No --> HOLD[Marcar lote sospechoso; no usarlo en decisiones de stock/margen]
-  PASS -- Sí --> READY[Publicar snapshot válido con watermark]
-  READY --> DECISION[Motor de decisiones lee snapshot válido]
-  STALE --> OPS[Panel de operaciones + reproceso]
-  HOLD --> OPS
-```
+  INV[Inventary PostgreSQL transaccional] --> PUB[Publicación lógica de tablas acordadas]
+  PUB --> SUB[Suscripción de replicación]
+  SUB --> PEI[(PostgreSQL dedicado de Peitho)]
+  PEI --> EXTRACT[Actualizar proyecciones y eventos canónicos]
+  EXTRACT --> META[Guardar origen actualizado, recibido/aplicado, watermark, lag, esquema y snapshot]
+  META --> CHECK[Conciliar conteos, cantidades, importes y saldos]
+  CHECK --> OK{¿Replicación sana, esquema compatible y datos conciliados?}
+  OK -- No --> STALE[Marcar STALE/DEGRADED; bloquear propuestas sensibles al stock/margen]
+  OK -- Sí --> READ[Usar la proyección más reciente para el análisis]
+  READ --> NEED{¿La propuesta depende de disponibilidad/precio en este instante?}
+  NEED -- Sí --> API[Consultar API interna de Inventary de solo lectura]
+  API --> APIOK{¿La validación actual fue satisfactoria?}
+  APIOK -- No / sin respuesta --> UNCONF[Mostrar propuesta no confirmada; no afirmar disponibilidad]
+  APIOK -- Sí --> CONF[Marcar verificación con fecha/hora y fuente]
+  NEED -- No --> PROPOSAL[Crear propuesta con watermark y limitaciones visibles]
+  CONF --> PROPOSAL
+  STALE --> OPS[Alerta operativa y recuperación controlada]
+~~~
+
+### Operación de la replicación
+
+1. Inicializar la suscripción y carga base con lista explícita de tablas/columnas, claves estables y contrato de esquema versionado.
+2. La replicación lógica no replica por sí misma DDL. Coordinar migraciones de publicador/suscriptor; validar compatibilidad antes de desplegarlas y recuperar tablas cuando el procedimiento lo requiera.
+3. Registrar source_updated_at, received_at, applied_at, watermark/posición, lag_seconds, schema_version, snapshot_id y reconciliation_status por conjunto. UNKNOWN no equivale a HEALTHY.
+4. Supervisar posición de envío/aplicación, lag, estado de suscripción, errores del apply worker, slots de replicación, crecimiento/retención de WAL, disco y capacidad de recuperación. Un slot cuyo consumidor está detenido puede retener WAL y llenar el disco.
+5. Un desacuerdo, esquema incompatible o lag fuera del umbral del entorno deja las proyecciones afectadas no aptas para decisiones dependientes de stock/margen.
+6. Los umbrales warning/block deben configurarse antes de producción y calibrarse con SLA reales. Los objetivos indicativos no sustituyen medición ni prueba de recuperación.
+7. La API interna se limita a endpoints tipados con identidad de servicio, alcance mínimo, límites y auditoría. No se entrega SQL libre a agentes/LLM.
+8. La identidad de integración no puede escribir en Inventary. Peitho no contabiliza ventas ni modifica existencias, compras, precios, reservas, productos o movimientos.
 
 ### Obligaciones de seguridad
 
-1. Crear una identidad de base de datos exclusiva para Peitho con `SELECT` únicamente sobre las tablas/vistas requeridas (o suscripción de réplica sin privilegios de escritura sobre el origen).
-2. Probar en CI que `INSERT`, `UPDATE`, `DELETE`, `TRUNCATE`, DDL y funciones de escritura son rechazadas por la identidad de Peitho.
-3. Prohibir consultas directas del agente/LLM a la base de Inventary. Solo conectores tipados y aprobados.
-4. Guardar por snapshot: hora de extracción, `watermark`, lote, esquema, controles de conciliación y frescura.
-5. Si el stock está obsoleto o hay retraso superior al umbral acordado, la interfaz lo indica y el motor no recomienda acciones dependientes de stock sin una condición o verificación adicional.
-6. Inventary sigue siendo fuente de verdad de su dominio. Peitho conserva una proyección, no una segunda autoridad operacional.
+- Verificar en CI que INSERT, UPDATE, DELETE, TRUNCATE, DDL y funciones de escritura se rechazan desde la identidad de Peitho contra Inventary.
+- No confiar en que el snapshot sea actual solo porque la suscripción aparece activa; mostrar última actualización, lag y conciliación.
+- Si la API de verificación está caída, no afirmar stock actual: conservar el resultado como borrador o propuesta no confirmada.
+- Inventary sigue siendo fuente de verdad; Peitho conserva proyecciones analíticas versionadas.
 
 ---
-
 ## 5. Actualizar la verdad operacional del inventario
 
 Este flujo no calcula un único campo “stock” sin contexto. Conserva por separado existencias físicas, disponibles, reservadas, en tránsito, dañadas/bloqueadas, comprometidas, recepciones pendientes y frescura de datos, según las entidades que exponga Inventary.
@@ -609,6 +618,34 @@ sequenceDiagram
 
 ---
 
+### Pasarela de IA autogestionada: generación de lenguaje y embeddings
+
+~~~mermaid
+flowchart LR
+  REQ[Solicitud autorizada] --> POLICY[Gateway IA: tenant, scopes, límites, redacción y auditoría]
+  POLICY --> LLM[vLLM: modelo de lenguaje local]
+  LLM --> VALID[Validar salida con esquema y evidencia]
+  VALID --> AUD[Guardar versión de modelo/reglas y resultado]
+  AUD --> HUMAN[Propuesta para revisión humana]
+  DOC[Texto autorizado] --> JOB[Cola de embeddings]
+  JOB --> PY[Microservicio Python: Sentence Transformers]
+  PY --> VEC[(PostgreSQL + pgvector con versiones/dimensiones)]
+  Q[Consulta autorizada] --> EMB[Embedding de consulta con la misma versión]
+  EMB --> VEC
+  VEC --> RET[Recuperación híbrida: filtros SQL + vector + texto]
+  RET --> POLICY
+  DEV[Ollama] -. solo desarrollo local .-> LLM
+~~~
+
+#### Contrato operativo de la pasarela
+
+- Producción: vLLM sirve el LLM en infraestructura propia con API compatible con OpenAI; esta compatibilidad es un protocolo, no una llamada a OpenAI API.
+- Embeddings: un servicio independiente Python/Sentence Transformers genera vectores localmente y los persiste en pgvector. LLM y encoder tienen versiones independientes.
+- No se habilitan OpenAI API, Azure OpenAI, Anthropic, Google Vertex AI ni proveedores de inferencia de pago en la configuración inicial; no enviar contenido empresarial a endpoints públicos de inferencia.
+- Elegir modelos después de benchmarks en español/vocabulario comercial ecuatoriano, calidad de recuperación, latencia, memoria, rendimiento y licencia. Registrar IDs/revisiones, dimensiones y métricas.
+- Un cambio de encoder requiere nueva versión del índice, re-embeddings controlados, evaluación y cutover solo después de validar calidad y latencia. Nunca mezclar vectores incompatibles.
+- Ollama se permite para desarrollo local; vLLM es la referencia de producción cuando la infraestructura lo permita. Se evitan tarifas por token, no costes de hardware, energía, almacenamiento y mantenimiento.
+
 ## 14. Frontend Angular: abrir pantalla y representar resultados
 
 ```mermaid
@@ -653,50 +690,50 @@ flowchart TD
 
 ---
 
-## 15. Login seguro, sesión y autorización
+## 15. Autenticación local, sesión y autorización
 
-```mermaid
+El lanzamiento inicial usa autenticación local de Peitho; no necesita Microsoft Entra, Google Workspace, Keycloak ni otro proveedor de identidad externo. La interfaz queda preparada para OIDC/SAML como extensión futura, sin activarlos en el primer despliegue.
+
+~~~mermaid
 sequenceDiagram
   actor U as Usuario
   participant FE as Angular
-  participant AUTH as Auth service
-  participant IDP as IdP corporativo opcional (OIDC/SAML)
-  participant DB as PostgreSQL
+  participant AUTH as Servicio local de autenticación
+  participant DB as PostgreSQL de Peitho
   participant AUD as Auditoría
-  U->>FE: Abre login
-  FE->>AUTH: Solicita challenge de login
-  AUTH-->>FE: challenge_id, clave pública, nonce, expiración y algoritmo
-  U->>FE: Introduce credenciales o utiliza SSO/passkey
-  alt Login de aplicación cifrado
-    FE->>FE: Cifra credenciales con clave efímera y AEAD; no las registra en consola
-    FE->>AUTH: ciphertext + challenge_id + material público efímero
-    AUTH->>AUTH: Verifica expiración, nonce de un solo uso y descifra en memoria
-  else SSO corporativo
-    FE->>IDP: Redirige a Authorization Code + PKCE
-    IDP-->>FE: Código de autorización
-    FE->>AUTH: Intercambia/verifica el flujo OIDC configurado
+  U->>FE: Abre pantalla de inicio de sesión
+  FE->>AUTH: Solicita challenge de un solo uso
+  AUTH-->>FE: challenge_id, nonce, expiración y algoritmo permitido
+  U->>FE: Usa contraseña + MFA o passkey
+  alt Intercambio protegido por cifrado de aplicación
+    FE->>FE: Protege material de autenticación con perfil criptográfico revisado
+    FE->>AUTH: ciphertext + challenge_id
+    AUTH->>AUTH: Valida nonce, expiración, uso único y origen; impide replay
+  else Passkey/WebAuthn
+    FE->>AUTH: Verificación WebAuthn con challenge
+    AUTH->>AUTH: Valida assertion y origen autorizado
   end
-  AUTH->>DB: Verifica usuario, estado, tenant, roles, MFA/políticas de sesión
+  AUTH->>DB: Verifica usuario, estado, tenant, hash Argon2id, MFA y roles
   DB-->>AUTH: Identidad y permisos vigentes
-  AUTH->>AUTH: Emite sesión/token de duración limitada y claims mínimos
-  AUTH->>AUD: Registra éxito/fallo sin contraseña ni token
-  AUTH-->>FE: Sesión segura + expiración + información de permisos no sensible
-  FE->>AUTH: Solicitudes posteriores con credencial de sesión
-  AUTH->>DB: Revalida sesión, tenant y permiso en cada petición sensible
+  AUTH->>AUTH: Crea sesión limitada y protegida
+  AUTH->>AUD: Registra éxito/fallo sin contraseña, secreto MFA ni token
+  AUTH-->>FE: Cookie/sesión segura y expiración
+  FE->>AUTH: Solicitud posterior
+  AUTH->>DB: Revalida sesión, tenant y permiso en cada operación sensible
   AUTH-->>FE: Solo DTO autorizado
-```
+~~~
 
-### Reglas
+### Reglas obligatorias
 
-- TLS siempre en red; cifrado de aplicación es una capa adicional, no reemplazo de TLS.
-- Challenge de uso único, expiración corta, protección contra replay y rate limiting.
-- No almacenar contraseña, tokens completos, secretos, códigos MFA ni ciphertext sensible en logs, analytics, errores o tracing.
-- Preferir SSO OIDC/SAML, MFA y passkeys en entorno enterprise; mantener login propio solo con controles maduros.
-- Usar cookies `HttpOnly`, `Secure`, `SameSite` cuando la topología lo permita; si se usan tokens, documentar custodia, rotación, renovación y revocación. Evitar guardar refresh tokens en `localStorage`.
-- Backend autoriza cada acción. Los guards/menús Angular mejoran UX pero no son barrera de seguridad.
+- TLS/HTTPS es obligatorio; el cifrado de aplicación, cuando corresponda, es una capa adicional y no sustituye TLS.
+- Contraseñas con Argon2id y salt único; no almacenarlas reversiblemente ni registrar secretos.
+- MFA mediante TOTP y passkeys/WebAuthn; exigirlo como mínimo a administradores y para operaciones sensibles. Proteger recuperación y revocación de sesiones.
+- Usar cookies HttpOnly, Secure y SameSite cuando la topología lo permita; protección CSRF, CSP, Trusted Types y límites progresivos. Evitar refresh tokens en localStorage.
+- Gestión de usuarios, roles y permisos por tenant. El backend autoriza cada acción; los guards y menús Angular solo mejoran la UX.
+- Auditar cambios de rol, MFA, recuperación, sesiones y accesos sensibles sin registrar contraseñas, códigos MFA, tokens ni ciphertext sensible.
+- OIDC/SAML pueden agregarse después mediante ADR y pruebas de tenant/roles, issuer/audience, revocación y recuperación. No son dependencia del lanzamiento inicial.
 
 ---
-
 ## 16. Multiempresa y aislamiento de datos
 
 ```mermaid

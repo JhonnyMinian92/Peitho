@@ -1,0 +1,176 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Peitho self-hosted AI gateway configuration",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "policy",
+    "llm",
+    "embeddings",
+    "development"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0.0"
+    },
+    "environment": {
+      "type": "string"
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allow_external_inference",
+        "allow_public_inference_endpoints",
+        "redact_sensitive_inputs",
+        "require_tenant_and_permission_filters",
+        "validate_structured_outputs",
+        "record_model_and_prompt_template_versions"
+      ],
+      "properties": {
+        "allow_external_inference": {
+          "const": false
+        },
+        "allow_public_inference_endpoints": {
+          "const": false
+        },
+        "redact_sensitive_inputs": {
+          "type": "boolean"
+        },
+        "require_tenant_and_permission_filters": {
+          "const": true
+        },
+        "validate_structured_outputs": {
+          "type": "boolean"
+        },
+        "record_model_and_prompt_template_versions": {
+          "type": "boolean"
+        }
+      }
+    },
+    "llm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "api_protocol",
+        "base_url_env",
+        "model_id",
+        "revision",
+        "request_timeout_seconds",
+        "max_concurrency_env"
+      ],
+      "properties": {
+        "provider": {
+          "const": "vllm"
+        },
+        "api_protocol": {
+          "const": "openai-compatible"
+        },
+        "base_url_env": {
+          "const": "PEITHO_VLLM_BASE_URL"
+        },
+        "model_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "request_timeout_seconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_concurrency_env": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "embeddings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "runtime_language",
+        "service_url_env",
+        "model_id",
+        "revision",
+        "dimensions",
+        "dimensions_must_match_model_output",
+        "vector_store",
+        "reindex_strategy"
+      ],
+      "properties": {
+        "provider": {
+          "const": "sentence-transformers"
+        },
+        "runtime_language": {
+          "const": "python"
+        },
+        "service_url_env": {
+          "const": "PEITHO_EMBEDDINGS_BASE_URL"
+        },
+        "model_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "dimensions": {
+          "oneOf": [
+            {
+              "type": "integer",
+              "minimum": 1
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "dimensions_must_match_model_output": {
+          "const": true
+        },
+        "vector_store": {
+          "const": "postgresql+pgvector"
+        },
+        "reindex_strategy": {
+          "const": "versioned_reindex_before_cutover"
+        }
+      }
+    },
+    "development": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ollama_allowed",
+        "production_runtime",
+        "ollama_allowed_in_production"
+      ],
+      "properties": {
+        "ollama_allowed": {
+          "type": "boolean"
+        },
+        "production_runtime": {
+          "const": "vllm"
+        },
+        "ollama_allowed_in_production": {
+          "const": false
+        }
+      }
+    },
+    "selection_gate": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "cost_note": {
+      "type": "string"
+    }
+  }
+}

@@ -99,3 +99,18 @@ This pattern strengthens isolation but introduces more authentication, authoriza
 Prefer this pattern whenever an internal network, gateway, client, or service identity alone must not grant access to a sensitive resource.
 
 Obsoleto: usar content en su lugar.
+
+
+# Peitho initial authentication policy
+
+The initial release uses locally managed identities and does not depend on Microsoft Entra, Google Workspace, Keycloak or a hosted identity provider.
+
+- Hash passwords with Argon2id using reviewed parameters and unique salts. Never store reversible passwords or secrets.
+- Provide MFA using TOTP or passkeys/WebAuthn; require MFA for administrators and high-risk actions. Protect account recovery and recovery codes, revoke sessions, and audit security-sensitive changes.
+- Require TLS/HTTPS, secure session cookies (HttpOnly, Secure, appropriate SameSite), CSRF protection where applicable, strict origin/CORS policy, rate limits, CSP and safe frontend rendering.
+- Application-level encryption of credential exchange is an additional control when appropriate; it is not a substitute for TLS, MFA or password hashing.
+- Enforce tenant and role authorization in the backend on every endpoint, export, job, agent tool and B2B request. Angular is not an authorization boundary.
+- Do not log passwords, session tokens, MFA secrets/codes, private keys or sensitive ciphertext.
+- OIDC/SAML are future extension points only. Enable federation only after an explicit decision, implementation tests and operational ownership exist.
+
+See [ADR-0002](architecture/decisions/ADR-0002-autenticacion-local.md) and [authentication example](contracts/config/authentication.example.json).

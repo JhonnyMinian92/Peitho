@@ -103,3 +103,15 @@ Transactions provide strong consistency but can reduce throughput and increase l
 Prefer this pattern when a single business action changes several records and observers must never see an invalid intermediate state.
 
 Obsoleto: usar content en su lugar.
+
+
+# Peitho-specific data integration and vector invariants
+
+- PostgreSQL in Peitho owns Peitho's CRM, canonical events, proposals, audit records, source-freshness state and versioned embedding metadata. It is not the source of truth for Inventary transactions.
+- Use dedicated logical replication from Inventary to Peitho for bulk operational data. Logical replication does not automatically propagate DDL; versioned schema changes must be coordinated and compatibility checked.
+- Track source update time, receive/apply time, watermark/LSN, lag, schema version, snapshot ID and reconciliation status for each dataset. Stale or unreconciled datasets are excluded from stock-sensitive decisions.
+- Keep an authenticated, scoped, read-only Inventary API for point-in-time availability/current-price checks. Never expose arbitrary SQL to the AI gateway and never grant Peitho write privileges on Inventary.
+- pgvector stores embeddings, not business truth. Track embedding model ID/revision, dimensions, checksum and generation time. A model/dimension change requires versioned re-embedding and validated index cutover.
+- Keep secrets outside JSON examples and source control. Example files refer to environment variable names, never credentials.
+
+See [ADR-0001](architecture/decisions/ADR-0001-inventary-logical-replication.md), [Inventary config example](contracts/config/inventary-readonly.example.json) and [source-freshness schema](contracts/schemas/source-freshness.schema.json).

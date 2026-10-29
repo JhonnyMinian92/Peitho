@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0.0",
+  "environment": "example-not-production",
+  "mode": "local",
+  "external_identity_provider": {
+    "enabled": false,
+    "initial_providers": []
+  },
+  "future_federation": {
+    "oidc": "future-only",
+    "saml": "future-only"
+  },
+  "passwords": {
+    "hash_algorithm": "Argon2id",
+    "reversible_storage": false
+  },
+  "mfa": {
+    "supported": [
+      "TOTP",
+      "WebAuthn/passkeys"
+    ],
+    "required_for_administrators": true,
+    "required_for_sensitive_actions": true,
+    "recovery_codes_protected": true
+  },
+  "transport": {
+    "tls_required": true,
+    "secure_cookie": true,
+    "http_only_cookie": true,
+    "same_site": "Lax",
+    "csrf_protection": true
+  },
+  "session": {
+    "limited_lifetime": true,
+    "server_side_revocation": true,
+    "refresh_tokens_in_local_storage": false
+  },
+  "application_level_credential_encryption": {
+    "enabled_when_applicable": true,
+    "single_use_challenge_required": true,
+    "supplements_tls": true
+  },
+  "audit": {
+    "record_login_success_and_failure": true,
+    "record_role_mfa_recovery_and_session_changes": true,
+    "never_log_password_tokens_mfa_secrets_or_sensitive_ciphertext": true
+  },
+  "tenant_authorization": {
+    "backend_enforced": true,
+    "per_request_permission_check": true
+  }
+}
