@@ -34,3 +34,23 @@
 - Previously fixed bugs remain fixed.
 - Existing automated tests pass before merging.
 - Manual smoke test of critical flows after dependency or infra changes.
+
+# Reused Qa from Central Memory
+
+## qa/functional_testing_checklist.md
+
+# Functional testing checklist
+
+- Golden path covered end to end.
+- Known edge cases covered (empty, boundary, invalid input).
+- Error states show a usable message and do not crash the flow.
+
+# Reused Qa from Central Memory
+
+## qa/release_readiness_checklist.md
+
+# Release readiness checklist
+
+- All required questions answered and no blocking pending items.
+- Migrations applied and reversible.
+- Rollback plan documented.
